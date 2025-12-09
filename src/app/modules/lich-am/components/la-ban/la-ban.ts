@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-la-ban',
@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   templateUrl: './la-ban.html',
   styleUrl: './la-ban.scss',
 })
-export class LaBan {
+export class LaBan implements AfterViewInit, OnDestroy {
   currentHeading = 0;
 
   sectorCenters = [0, 45, 90, 135, 180, 225, 270, 315];
@@ -24,10 +24,19 @@ export class LaBan {
 
   dragging = false;
   sensorActive = false;
+  private deviceOrientationHandler?: (e: any) => void;
 
   ngAfterViewInit() {
-    this.drawTicks();
-    this.attachDragEvents();
+    setTimeout(() => {
+      this.drawTicks();
+      this.attachDragEvents();
+    }, 0);
+  }
+
+  ngOnDestroy() {
+    if (this.deviceOrientationHandler) {
+      window.removeEventListener('deviceorientation', this.deviceOrientationHandler);
+    }
   }
 
   /** --- TÍNH GÓC --- */
@@ -87,52 +96,102 @@ export class LaBan {
     const compass = document.getElementById('compass');
     if (!compass) return;
 
-    const getAngle = (e: any) => {
+    const getAngle = (e: MouseEvent | TouchEvent | PointerEvent) => {
       const rect = compass.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const x = e.clientX;
-      const y = e.clientY;
-      return this.normalize((Math.atan2(x - cx, cy - y) * 180) / Math.PI);
+
+      let x: number, y: number;
+      if ('touches' in e && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+      } else if ('clientX' in e) {
+        x = e.clientX;
+        y = e.clientY;
+      } else {
+        return this.currentHeading;
+      }
+
+      // Tính góc từ tâm đến điểm click (0° = Bắc, tăng theo chiều kim đồng hồ)
+      const angle = Math.atan2(x - cx, cy - y) * (180 / Math.PI);
+      return this.normalize(angle);
     };
 
-    compass.addEventListener('pointerdown', (ev) => {
+    const handleStart = (ev: MouseEvent | TouchEvent | PointerEvent) => {
       this.dragging = true;
-      compass.setPointerCapture(ev.pointerId);
-    });
+      if ('pointerId' in ev && 'setPointerCapture' in compass) {
+        (compass as any).setPointerCapture((ev as PointerEvent).pointerId);
+      }
+      ev.preventDefault();
+    };
 
-    window.addEventListener('pointermove', (ev) => {
+    const handleMove = (ev: MouseEvent | TouchEvent | PointerEvent) => {
       if (!this.dragging) return;
       this.currentHeading = getAngle(ev);
-    });
+      ev.preventDefault();
+    };
 
-    window.addEventListener('pointerup', () => {
+    const handleEnd = () => {
       this.dragging = false;
-    });
+    };
+
+    // Pointer events (modern browsers)
+    compass.addEventListener('pointerdown', handleStart);
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleEnd);
+
+    // Mouse events (fallback)
+    compass.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    // Touch events (mobile)
+    compass.addEventListener('touchstart', handleStart);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
   }
 
   /** --- SENSOR --- */
   async enableSensor() {
     if (this.sensorActive) {
       this.sensorActive = false;
+      if (this.deviceOrientationHandler) {
+        window.removeEventListener('deviceorientation', this.deviceOrientationHandler);
+        this.deviceOrientationHandler = undefined;
+      }
       return;
     }
 
+    // Kiểm tra hỗ trợ DeviceOrientationEvent
+    if (!window.DeviceOrientationEvent) {
+      alert('Trình duyệt không hỗ trợ cảm biến la bàn');
+      return;
+    }
+
+    // iOS 13+ yêu cầu permission
     if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
       try {
-        const p = await (DeviceOrientationEvent as any).requestPermission();
-        if (p !== 'granted') return alert('Không được cấp quyền cảm biến');
-      } catch {
-        return alert('Trình duyệt từ chối cảm biến');
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        if (permission !== 'granted') {
+          alert('Không được cấp quyền cảm biến. Vui lòng cấp quyền trong cài đặt trình duyệt.');
+          return;
+        }
+      } catch (error) {
+        alert('Không thể yêu cầu quyền cảm biến');
+        return;
       }
     }
 
-    window.addEventListener('deviceorientation', (e: any) => {
+    // Xử lý dữ liệu từ cảm biến
+    this.deviceOrientationHandler = (e: DeviceOrientationEvent) => {
       if (e.alpha != null) {
+        // alpha: 0-360, tăng theo chiều kim đồng hồ khi xoay ngược chiều kim đồng hồ
+        // Chuyển đổi để 0° = Bắc, tăng theo chiều kim đồng hồ
         this.currentHeading = this.normalize(360 - e.alpha);
       }
-    });
+    };
 
+    window.addEventListener('deviceorientation', this.deviceOrientationHandler);
     this.sensorActive = true;
   }
 
