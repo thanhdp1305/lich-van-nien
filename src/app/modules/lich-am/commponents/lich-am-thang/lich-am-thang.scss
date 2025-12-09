@@ -3,9 +3,37 @@ table td.day-cell {
   min-width: 60px;
   height: 70px;
   vertical-align: top;
+  position: relative;
+  padding-top: 10px;
 }
 
 table td.day-cell:hover {
   background: #f2f6ff;
 }
 
+.day-dot {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: transparent;
+}
+
+.dot-good {
+  background: #2ecc71;
+}
+
+.dot-bad {
+  background: #e74c3c;
+}
+
+.dot-neutral {
+  background: #95a5a6;
+}
+
+.lunar-text {
+  line-height: 1.1;
+}

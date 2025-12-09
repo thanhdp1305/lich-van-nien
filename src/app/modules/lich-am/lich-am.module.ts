@@ -5,11 +5,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { LichAmThang } from './commponents/lich-am-thang/lich-am-thang';
 import { TraCuu } from './commponents/tra-cuu/tra-cuu';
 import { LichAmRoutingModule } from './lich-am-routing.module';
+import { LaBan } from './components/la-ban/la-ban';
 
 @NgModule({
   declarations: [
     LichAmThang,
-    TraCuu
+    TraCuu,
+    LaBan
   ],
   imports: [
     CommonModule,

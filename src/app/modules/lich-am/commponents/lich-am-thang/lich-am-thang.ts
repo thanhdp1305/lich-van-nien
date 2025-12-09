@@ -1,7 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { DayDetail, LichService } from '../../services/lich.service';
 
-type DayCell = { date: Date; iso: string; day: number; inMonth: boolean; isToday: boolean };
+type DayCell = {
+  date: Date;
+  iso: string;
+  day: number;
+  inMonth: boolean;
+  isToday: boolean;
+  mood: string;
+  lunarDay: number;
+  lunarMonth: number;
+  lunarLeap: boolean;
+  canChiNgay: string;
+};
 
 @Component({
   selector: 'app-lich-am-thang',
@@ -41,6 +52,7 @@ export class LichAmThang implements OnInit {
     const iso = typeof date === 'string' ? date : this.toISO(date);
     this.selectedDateIso = iso;
     this.detail = this.lichService.getDayDetail(iso);
+    console.log(this.detail);
   }
 
   selectCell(cell: DayCell): void {
@@ -53,7 +65,8 @@ export class LichAmThang implements OnInit {
   private buildCalendar(): void {
     const cells: DayCell[] = [];
     const firstOfMonth = new Date(this.selectedYear, this.selectedMonth - 1, 1);
-    const startDow = firstOfMonth.getDay(); // 0 (CN) -> 6 (T7)
+    // Đặt tuần bắt đầu từ Thứ 2 (T2)
+    const startDow = (firstOfMonth.getDay() + 6) % 7; // 0 (T2) -> 6 (CN)
     const daysInMonth = new Date(this.selectedYear, this.selectedMonth, 0).getDate();
 
     const prevMonthLast = new Date(this.selectedYear, this.selectedMonth - 1, 0);
@@ -78,25 +91,44 @@ export class LichAmThang implements OnInit {
     }
     this.weeks = weeks;
 
-    const selDate = this.selectedDateIso ? new Date(this.selectedDateIso) : new Date(this.selectedYear, this.selectedMonth - 1, 1);
-    if (selDate.getMonth() + 1 !== this.selectedMonth || selDate.getFullYear() !== this.selectedYear) {
+    const selDate = this.selectedDateIso
+      ? new Date(this.selectedDateIso)
+      : new Date(this.selectedYear, this.selectedMonth - 1, 1);
+    if (
+      selDate.getMonth() + 1 !== this.selectedMonth ||
+      selDate.getFullYear() !== this.selectedYear
+    ) {
       this.selectDate(new Date(this.selectedYear, this.selectedMonth - 1, 1));
     }
   }
 
   private toCell(d: Date, inMonth: boolean): DayCell {
     const today = new Date();
+    const detail = this.lichService.getDayDetail(d);
+    const [lunarDay, lunarMonth] = detail.lunarDate.split('/').map((x) => Number(x));
     return {
       date: d,
       iso: this.toISO(d),
       day: d.getDate(),
       inMonth,
       isToday: d.toDateString() === today.toDateString(),
+      mood: this.getMood(detail),
+      lunarDay: lunarDay || 0,
+      lunarMonth: lunarMonth || 0,
+      lunarLeap: detail.lunarLeap,
+      canChiNgay: detail.canChiNgay
     };
   }
 
   private toISO(date: Date): string {
     const tzOffset = date.getTimezoneOffset() * 60000;
     return new Date(date.getTime() - tzOffset).toISOString().slice(0, 10);
+  }
+
+  private getMood(detail: DayDetail | undefined) {
+    if (detail?.ngayHoangDao)
+      return detail?.ngayHoangDao?.good == true ? 'good' : 'bad';
+    else
+      return "neutral";
   }
 }

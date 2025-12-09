@@ -1,0 +1,66 @@
+.wrap {
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  gap: 20px;
+  padding: 20px;
+  background: #081226;
+  border-radius: 18px;
+  color: white;
+}
+.compass-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.compass {
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  user-select: none;
+}
+.needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 42%;
+  transform-origin: 50% 100%;
+}
+.center-dot {
+  width: 14px;
+  height: 14px;
+  background: #ffd166;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.panel {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+.deg {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffd166;
+}
+.dir {
+  font-size: 18px;
+  opacity: 0.75;
+}
+.fs-name {
+  margin-top: 10px;
+  font-size: 20px;
+}
+.mapping input {
+  width: 100%;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  border-radius: 8px;
+}

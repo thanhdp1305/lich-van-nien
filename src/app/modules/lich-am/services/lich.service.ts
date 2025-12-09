@@ -7,7 +7,15 @@ export type NhiThapBatTuItem = {
   data: { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string };
 };
 export type TrucItem = { key: string; data: { tot: string; xau: string } };
-export type XungHopValue = { lucHop?: string; tamHop?: string[]; xung?: string; hinh?: string; hai?: string; pha?: string; tuyet?: string };
+export type XungHopValue = {
+  lucHop?: string;
+  tamHop?: string[];
+  xung?: string;
+  hinh?: string;
+  hai?: string;
+  pha?: string;
+  tuyet?: string;
+};
 export type DayDetail = {
   solarDate: string;
   lunarDate: string;
@@ -30,6 +38,10 @@ export type DayDetail = {
   huongList: { k: string; v: string }[];
   gioXuatHanhNotes: GioXuatHanhItem[];
   textSummary: string;
+  tietKhi: any;
+  ngayHoangDao: any;
+  saoTot: string[]; // Thêm trường này
+  saoXau: string[]; // Thêm trường này
 };
 
 @Injectable({ providedIn: 'root' })
@@ -61,10 +73,16 @@ export class LichService {
     const ngocHapList = this.buildNgocHap(canNgay, chiNgay, lunar.lunarDay);
     const huongList = Object.entries(this.HUONG_XUAT_HANH).map(([k, v]) => ({ k, v }));
     const gioXuatHanhNotes = this.buildGioXuatHanhNotes();
+    const tietKhi = this.getTietKhi(jdn);
+    const [canThang, chiThang] = canChiThang.split(' ');
+    const ngayHoangDao: any = this.getHoangDaoStatus(chiNgay, chiThang);
+    const saoTotXau = this.getSaoTotSaoXau(canNgay, chiNgay, chiThang, truc, nhi, ngayHoangDao);
 
     const textSummary = [
       `Dương lịch: ${dd}/${mm}/${yy}`,
-      `Âm lịch: ${lunar.lunarDay}/${lunar.lunarMonth}${lunar.lunarLeap ? ' (Nhuận)' : ''}/${lunar.lunarYear}`,
+      `Âm lịch: ${lunar.lunarDay}/${lunar.lunarMonth}${lunar.lunarLeap ? ' (Nhuận)' : ''}/${
+        lunar.lunarYear
+      }`,
       `Can-Chi ngày: ${canChiNgay}`,
       `Can-Chi tháng: ${canChiThang}`,
       `Can-Chi năm: ${canChiNam}`,
@@ -101,6 +119,10 @@ export class LichService {
       huongList,
       gioXuatHanhNotes,
       textSummary,
+      tietKhi,
+      ngayHoangDao,
+      saoTot: saoTotXau.saoTot, // TRẢ VỀ KẾT QUẢ
+      saoXau: saoTotXau.saoXau, // TRẢ VỀ KẾT QUẢ
     };
   }
 
@@ -113,7 +135,11 @@ export class LichService {
   }
 
   // ----------------- Helpers -----------------
-  private buildBanhTo(canNgay: string, chiNgay: string, lunarDay: number): { canStr: string; chiStr: string; lunarStr: string } {
+  private buildBanhTo(
+    canNgay: string,
+    chiNgay: string,
+    lunarDay: number
+  ): { canStr: string; chiStr: string; lunarStr: string } {
     return {
       canStr: this.BACH_KY_CAN[canNgay] || 'Không có thông tin cụ thể.',
       chiStr: this.BACH_KY_CHI[chiNgay] || 'Không có thông tin cụ thể.',
@@ -124,13 +150,16 @@ export class LichService {
   private buildNgocHap(canNgay: string, chiNgay: string, lunarDay: number): NgocHapItem[] {
     let list: NgocHapItem[] = [];
     (this.SAO_TOT_CAN[canNgay] || []).forEach((k) => {
-      if (this.NGOC_HAP_SAO_TOT_FULL[k]) list.push({ k, type: 'good', v: this.NGOC_HAP_SAO_TOT_FULL[k] });
+      if (this.NGOC_HAP_SAO_TOT_FULL[k])
+        list.push({ k, type: 'good', v: this.NGOC_HAP_SAO_TOT_FULL[k] });
     });
     (this.SAO_XAU_CAN[canNgay] || []).forEach((k) => {
-      if (this.NGOC_HAP_SAO_XAU_FULL[k]) list.push({ k, type: 'bad', v: this.NGOC_HAP_SAO_XAU_FULL[k] });
+      if (this.NGOC_HAP_SAO_XAU_FULL[k])
+        list.push({ k, type: 'bad', v: this.NGOC_HAP_SAO_XAU_FULL[k] });
     });
     (this.SAO_XAU_CHI[chiNgay] || []).forEach((k) => {
-      if (this.NGOC_HAP_SAO_XAU_FULL[k]) list.push({ k, type: 'bad', v: this.NGOC_HAP_SAO_XAU_FULL[k] });
+      if (this.NGOC_HAP_SAO_XAU_FULL[k])
+        list.push({ k, type: 'bad', v: this.NGOC_HAP_SAO_XAU_FULL[k] });
     });
     const TN = [3, 7, 13, 18, 22, 27];
     if (TN.includes(lunarDay)) {
@@ -161,7 +190,14 @@ export class LichService {
     const a = this.INT((14 - mm) / 12);
     const y = yy + 4800 - a;
     const m = mm + 12 * a - 3;
-    let jd = dd + this.INT((153 * m + 2) / 5) + 365 * y + this.INT(y / 4) - this.INT(y / 100) + this.INT(y / 400) - 32045;
+    let jd =
+      dd +
+      this.INT((153 * m + 2) / 5) +
+      365 * y +
+      this.INT(y / 4) -
+      this.INT(y / 100) +
+      this.INT(y / 400) -
+      32045;
     if (jd < 2299161) {
       jd = dd + this.INT((153 * m + 2) / 5) + 365 * y + this.INT(y / 4) - 32083;
     }
@@ -195,7 +231,10 @@ export class LichService {
       0.001 * Math.sin((2 * F - Mpr) * dr) +
       0.0005 * Math.sin((2 * Mpr + M) * dr);
 
-    const deltat = T < -11 ? 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 : -0.000278 + 0.000265 * T + 0.000262 * T2;
+    const deltat =
+      T < -11
+        ? 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3
+        : -0.000278 + 0.000265 * T + 0.000262 * T2;
     const JdNew = Jd1 + C1 - deltat;
     return this.INT(JdNew + 0.5 + timeZone / 24);
   }
@@ -206,7 +245,10 @@ export class LichService {
     const dr = Math.PI / 180;
     const M = 357.5291 + 35999.0503 * T - 0.0001559 * T2;
     const L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
-    const DL = (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M) + (0.019993 - 0.000101 * T) * Math.sin(2 * dr * M) + 0.00029 * Math.sin(3 * dr * M);
+    const DL =
+      (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M) +
+      (0.019993 - 0.000101 * T) * Math.sin(2 * dr * M) +
+      0.00029 * Math.sin(3 * dr * M);
     let L = (L0 + DL) * dr;
     L -= Math.PI * 2 * this.INT(L / (Math.PI * 2));
     return this.INT((L / Math.PI) * 6);
@@ -279,8 +321,22 @@ export class LichService {
   }
 
   private getCanChiThang(canNamIndex: number, thangAm: number): string {
-    const canIndex = (canNamIndex * 12 + thangAm + 3) % 10;
+    // const canIndex = (canNamIndex * 12 + thangAm + 3) % 10;
+    // const chiIndex = (thangAm + 1) % 12;
+    // return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
+
+    // canNamIndex: Can năm (0=Giáp, 1=Ất, ..., 9=Quý)
+    // thangAm: Tháng Âm lịch (1, 2, ..., 12)
+
+    // Index của Can tháng Dần (tháng 1 Âm lịch)
+    const canThangDich = (canNamIndex * 2 + 2) % 10;
+
+    // Can tháng = (Can tháng Dần + (tháng Âm - 1)) mod 10
+    const canIndex = (canThangDich + (thangAm - 1)) % 10;
+
+    // Chi tháng = (tháng Âm + 1) mod 12 (vì Chi Tý index 0, Chi Dần index 2)
     const chiIndex = (thangAm + 1) % 12;
+
     return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
   }
 
@@ -320,7 +376,9 @@ export class LichService {
     const T = (jdn - 2451545.0) / 36525.0;
     const M = 357.5291 + 35999.0503 * T;
     const L0 = 280.46645 + 36000.76983 * T;
-    const DL = (1.9146 - 0.004817 * T) * Math.sin((M * Math.PI) / 180) + 0.019993 * Math.sin((2 * M * Math.PI) / 180);
+    const DL =
+      (1.9146 - 0.004817 * T) * Math.sin((M * Math.PI) / 180) +
+      0.019993 * Math.sin((2 * M * Math.PI) / 180);
     const L = L0 + DL;
     return ((L % 360) + 360) % 360;
   }
@@ -334,12 +392,484 @@ export class LichService {
   }
 
   private getTrucByJdn(jdn: number): TrucItem {
-    const idx = ((jdn + this.TRUC_OFFSET) % 12 + 12) % 12;
+    const idx = (((jdn + this.TRUC_OFFSET) % 12) + 12) % 12;
     const key = this.TRUC_ORDER[idx];
     return { key, data: this.TRUC[key] };
   }
 
-  // ----------------- Dữ liệu -----------------
+  // Lấy thông tin tiết khí
+  private getTietKhi(jdn: number): string {
+    const lon = this.sunLongitude(jdn); // Lấy Hoàng Kinh Độ (0 - 360)
+    let closestTietKhi = '';
+    let minDiff = 360;
+
+    // Sắp xếp lại Tiết Khí theo góc tăng dần để duyệt hiệu quả hơn
+    const sortedTietKhi = [...this.TIET_KHI_DATA].sort((a, b) => a.goc - b.goc);
+
+    // Duyệt qua 24 tiết khí để tìm tiết khí mà ngày JDN đang nằm trong đó
+    for (let i = 0; i < sortedTietKhi.length; i++) {
+      const current = sortedTietKhi[i];
+      const next = sortedTietKhi[(i + 1) % sortedTietKhi.length];
+
+      const currentGoc = current.goc;
+      let nextGoc = next.goc;
+
+      // Xử lý trường hợp vòng qua 360/0 độ (Lập Xuân đến Xuân Phân)
+      if (nextGoc <= currentGoc) {
+        nextGoc += 360;
+      }
+
+      // Nếu Hoàng Kinh Độ nằm giữa góc hiện tại và góc tiếp theo
+      if (lon >= currentGoc && lon < nextGoc) {
+        return current.ten; // Trả về tên tiết khí hiện tại
+      }
+
+      // Trường hợp lon > 315 và lon < 360 (vùng của Lập Xuân)
+      if (lon >= 315 && lon < 360 && current.ten === 'Lập Xuân') {
+        return current.ten;
+      }
+    }
+
+    // Xử lý trường hợp 0-15 độ (Xuân Phân) nếu không bắt được trong vòng lặp (lon < 15)
+    if (lon >= 0 && lon < 15) {
+      return 'Xuân Phân';
+    }
+
+    return 'Không xác định'; // Trường hợp dự phòng
+  }
+
+  private getSaoHoangDao(chiNgay: string) {
+    return this.SAO_HOANG_DAO_MAP[chiNgay] || null;
+  }
+
+  private getSaoHacDao(chiNgay: string) {
+    return this.SAO_HAC_DAO_MAP[chiNgay] || null;
+  }
+
+  // private getHoangDaoStatus(chiNgay: string, chiThang: string) {
+  //   // const hoangDaoList = this.NGAY_HOANG_DAO[chiThang];
+
+  //   const chiThangIndex = this.CHI_TO_INDEX[chiThang];
+  //   const isHoangDao = this.NGAY_HOANG_DAO_THANG[chiThangIndex].includes(chiNgay);
+  //   const isHacDao = this.NGAY_HAC_DAO_THANG[chiThangIndex].includes(chiNgay);
+
+  //   if (isHoangDao) {
+  //     return {
+  //       type: 'Hoàng đạo',
+  //       good: true,
+  //       sao: this.getSaoHoangDao(chiNgay), // ví dụ Kim Quỹ, Thanh Long…
+  //     };
+  //   } else if (isHacDao) {
+  //     return {
+  //       type: 'Hắc đạo',
+  //       good: false,
+  //       sao: this.getSaoHacDao(chiNgay), // ví dụ Bạch Hổ, Chu Tước…
+  //     };
+  //   } else {
+  //     return null;
+  //   }
+  // }
+
+  // Giả định bạn đã có mảng 12 Chi
+  // readonly DS_CHI = [
+  //   'Tý',
+  //   'Sửu',
+  //   'Dần',
+  //   'Mão',
+  //   'Thìn',
+  //   'Tỵ',
+  //   'Ngọ',
+  //   'Mùi',
+  //   'Thân',
+  //   'Dậu',
+  //   'Tuất',
+  //   'Hợi',
+  // ];
+
+  // readonly DS_SAO_HOANG_DAO: string[] = [
+  //   'Thanh Long',
+  //   'Minh Đường',
+  //   'Kim Quý',
+  //   'Kim Đường',
+  //   'Ngọc Đường',
+  //   'Tư Mệnh',
+  // ];
+
+  // readonly DS_SAO_HAC_DAO: string[] = [
+  //   'Thiên Hình',
+  //   'Chu Tước',
+  //   'Bạch Hổ',
+  //   'Thiên Lao',
+  //   'Nguyên Vũ',
+  //   'Câu Trận',
+  // ];
+
+  // // Chu kỳ 12 Sao Hoàng/Hắc Đạo
+  // readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO = [
+  //   'Thanh Long',
+  //   'Minh Đường',
+  //   'Thiên Hình',
+  //   'Chu Tước',
+  //   'Kim Quý',
+  //   'Kim Đường',
+  //   'Bạch Hổ',
+  //   'Ngọc Đường',
+  //   'Thiên Lao',
+  //   'Nguyên Vũ',
+  //   'Tư Mệnh',
+  //   'Câu Trận',
+  // ];
+
+  // // Bản đồ xác định Chi Ngày bắt đầu (tại đó giờ Tý là Thanh Long) theo Chi Tháng
+  // readonly MAP_CHI_THANG_TO_START_DAY_CHI: Record<string, string> = {
+  //   Dần: 'Tý',
+  //   Thân: 'Tý', // Tháng 1, 7 -> Ngày Tý
+  //   Thìn: 'Thìn',
+  //   Tuất: 'Thìn', // Tháng 3, 9 -> Ngày Thìn
+  //   Tỵ: 'Ngọ',
+  //   Hợi: 'Ngọ', // Tháng 4, 10 -> Ngày Ngọ
+  //   Sửu: 'Tuất',
+  //   Mùi: 'Tuất', // Tháng 12, 6 -> Ngày Tuất
+  //   Mão: 'Dần',
+  //   Dậu: 'Dần', // Tháng 2, 8 -> Ngày Dần
+  //   Tý: 'Thân',
+  //   Ngọ: 'Thân', // Tháng 11, 5 -> Ngày Thân
+  // };
+
+  private getHoangDaoStatus(
+    chiNgay: string,
+    chiThang: string
+  ): any {
+    return null;
+  }
+
+
+  /**
+   * Hàm tổng hợp các sao Cát (Tốt) và Hung (Xấu) dựa trên Can Chi ngày, Trực, Hoàng Đạo/Hắc Đạo.
+   * @param lunar Chi tiết ngày Âm lịch đã tính.
+   * @returns { SaoDetail } Danh sách các sao tốt và sao xấu.
+   */
+  private getSaoTotSaoXau(
+    canNgay: string,
+    chiNgay: string,
+    chiThang: string,
+    truc: TrucItem,
+    nhiThapBatTu: NhiThapBatTuItem,
+    hoangDaoStatus: { type: string; good: boolean; sao: string }
+  ): { saoTot: string[]; saoXau: string[] } {
+    const saoTot: string[] = [];
+    const saoXau: string[] = [];
+
+    // 1. Sao Tốt/Xấu theo Can Ngày (SAO_TOT_CAN, SAO_XAU_CAN)
+    if (this.SAO_TOT_CAN[canNgay]) {
+      saoTot.push(...this.SAO_TOT_CAN[canNgay]);
+    }
+    if (this.SAO_XAU_CAN[canNgay]) {
+      saoXau.push(...this.SAO_XAU_CAN[canNgay]);
+    }
+
+    // 2. Sao Tốt/Xấu theo Chi Ngày (SAO_TOT_CHI, SAO_XAU_CHI)
+    if (this.SAO_TOT_CHI[chiNgay]) {
+      saoTot.push(...this.SAO_TOT_CHI[chiNgay]);
+    }
+    if (this.SAO_XAU_CHI[chiNgay]) {
+      saoXau.push(...this.SAO_XAU_CHI[chiNgay]);
+    }
+
+    // Sao Tốt/Xấu theo CHI THÁNG
+    if (this.SAO_TOT_THANG[chiThang]) {
+      saoTot.push(...this.SAO_TOT_THANG[chiThang]);
+    }
+    if (this.SAO_XAU_THANG[chiThang]) {
+      saoXau.push(...this.SAO_XAU_THANG[chiThang]);
+    }
+
+    if (this.SAO_DAC_BIET[chiThang]) {
+      saoTot.push(...this.SAO_DAC_BIET[chiThang]);
+    }
+
+    // 3. Sao Hoàng Đạo/Hắc Đạo
+    // Thêm tên sao Hoàng Đạo/Hắc Đạo vào danh sách.
+    // if (hoangDaoStatus.good) {
+    //   saoTot.push(hoangDaoStatus.sao); // Kim Quỹ, Thanh Long, v.v.
+    // } else {
+    //   saoXau.push(hoangDaoStatus.sao); // Bạch Hổ, Chu Tước, v.v.
+    // }
+
+    // 4. Đánh giá từ Nhị Thập Bát Tú (Sao)
+    // Nếu Sao tốt/xấu của Nhị Thập Bát Tú rõ ràng, thêm vào danh sách.
+    const nhiTuLoai = nhiThapBatTu.data.loai;
+    if (nhiTuLoai === 'Cát') {
+      saoTot.push(`Sao ${nhiThapBatTu.data.sao} (Tốt)`);
+    } else if (nhiTuLoai === 'Hung') {
+      saoXau.push(`Sao ${nhiThapBatTu.data.sao} (Xấu)`);
+    }
+
+    // 5. Đánh giá từ Trực
+    // Nếu Trực được xem là Tốt (Cát), thêm Trực vào sao tốt.
+    // Thường Trực Kiến, Mãn, Bình, Định, Chấp, Khai được coi là Tốt
+    // Trực Phá, Nguy, Thu, Bế được coi là Xấu
+    const trucKey = truc.key;
+    if (['Mãn', 'Bình', 'Định', 'Chấp', 'Khai'].includes(trucKey)) {
+      saoTot.push(`Trực ${trucKey} (Cát)`);
+    } else if (['Phá', 'Nguy', 'Thu', 'Bế'].includes(trucKey)) {
+      saoXau.push(`Trực ${trucKey} (Hung)`);
+    } else {
+      // Trường hợp còn lại (Kiến, Trừ) thường là trung bình hoặc có ngoại lệ
+      // Có thể để trống hoặc thêm ghi chú nếu cần chi tiết hơn.
+    }
+
+    // 6. Loại bỏ các sao trùng lặp và trả về
+    const uniqueSaoTot = [...new Set(saoTot)].filter((s) => s?.trim() !== '');
+    const uniqueSaoXau = [...new Set(saoXau)].filter((s) => s?.trim() !== '');
+
+    return { saoTot: uniqueSaoTot, saoXau: uniqueSaoXau };
+  }
+
+  // ----------------- MARK: Dữ liệu -----------------
+  // NGAY_HOANG_DAO: Danh sách các Chi Ngày là Hoàng Đạo cho mỗi Chi Tháng.
+  // NGAY_HOANG_DAO: Danh sách các Chi Ngày là Hoàng Đạo (ngày Tốt) cho mỗi Chi Tháng.
+  // Quy tắc dựa trên Lục Tặc Kim Phù chuẩn: Bắt đầu từ ngày Chi đối xung với Chi Tháng.
+  readonly NGAY_HOANG_DAO: Record<string, string[]> = {
+    // Tháng Dần (Nguyệt Kiến Dần): Hoàng Đạo là Tý, Sửu, Thìn, Tỵ, Mùi, Thân
+    Dần: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Thân'],
+
+    // Tháng Mão (Nguyệt Kiến Mão): Hoàng Đạo là Dần, Mão, Tỵ, Ngọ, Thân, Dậu
+    Mão: ['Dần', 'Mão', 'Tỵ', 'Ngọ', 'Thân', 'Dậu'],
+
+    // Tháng Thìn (Nguyệt Kiến Thìn): Hoàng Đạo là Mão, Thìn, Ngọ, Mùi, Dậu, Tuất
+    Thìn: ['Mão', 'Thìn', 'Ngọ', 'Mùi', 'Dậu', 'Tuất'],
+
+    // Tháng Tỵ (Nguyệt Kiến Tỵ): Hoàng Đạo là Thìn, Tỵ, Mùi, Thân, Tuất, Hợi
+    Tỵ: ['Thìn', 'Tỵ', 'Mùi', 'Thân', 'Tuất', 'Hợi'],
+
+    // Tháng Ngọ (Nguyệt Kiến Ngọ): Hoàng Đạo là Tỵ, Ngọ, Thân, Dậu, Hợi, Tý
+    Ngọ: ['Tỵ', 'Ngọ', 'Thân', 'Dậu', 'Hợi', 'Tý'],
+
+    // Tháng Mùi (Nguyệt Kiến Mùi): Hoàng Đạo là Ngọ, Mùi, Dậu, Tuất, Tý, Sửu
+    Mùi: ['Ngọ', 'Mùi', 'Dậu', 'Tuất', 'Tý', 'Sửu'],
+
+    // Tháng Thân (Nguyệt Kiến Thân): Hoàng Đạo là Mùi, Thân, Tuất, Hợi, Sửu, Dần
+    Thân: ['Mùi', 'Thân', 'Tuất', 'Hợi', 'Sửu', 'Dần'],
+
+    // Tháng Dậu (Nguyệt Kiến Dậu): Hoàng Đạo là Thân, Dậu, Hợi, Tý, Dần, Mão
+    Dậu: ['Thân', 'Dậu', 'Hợi', 'Tý', 'Dần', 'Mão'],
+
+    // Tháng Tuất (Nguyệt Kiến Tuất): Hoàng Đạo là Dậu, Tuất, Tý, Sửu, Mão, Thìn
+    Tuất: ['Dậu', 'Tuất', 'Tý', 'Sửu', 'Mão', 'Thìn'],
+
+    // Tháng Hợi (Nguyệt Kiến Hợi): Hoàng Đạo là Tuất, Hợi, Sửu, Dần, Thìn, Tỵ
+    Hợi: ['Tuất', 'Hợi', 'Sửu', 'Dần', 'Thìn', 'Tỵ'],
+
+    // Tháng Tý (Nguyệt Kiến Tý): Hoàng Đạo là Hợi, Tý, Dần, Mão, Tỵ, Ngọ
+    Tý: ['Hợi', 'Tý', 'Dần', 'Mão', 'Tỵ', 'Ngọ'],
+
+    // Tháng Sửu (Nguyệt Kiến Sửu): Hoàng Đạo là Tý, Sửu, Mão, Thìn, Ngọ, Mùi
+    Sửu: ['Tý', 'Sửu', 'Mão', 'Thìn', 'Ngọ', 'Mùi'],
+  };
+
+  // NGAY_HOANG_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
+  // readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
+  //   1: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Thân'], // Dần
+  //   2: ['Dần', 'Mão', 'Tỵ', 'Ngọ', 'Thân', 'Dậu'], // Mão
+  //   3: ['Mão', 'Thìn', 'Ngọ', 'Mùi', 'Dậu', 'Tuất'], // Thìn
+  //   4: ['Thìn', 'Tỵ', 'Mùi', 'Thân', 'Tuất', 'Hợi'], // Tỵ
+  //   5: ['Tỵ', 'Ngọ', 'Thân', 'Dậu', 'Hợi', 'Tý'], // Ngọ
+  //   6: ['Ngọ', 'Mùi', 'Dậu', 'Tuất', 'Tý', 'Sửu'], // Mùi
+  //   7: ['Mùi', 'Thân', 'Tuất', 'Hợi', 'Sửu', 'Dần'], // Thân
+  //   8: ['Thân', 'Dậu', 'Hợi', 'Tý', 'Dần', 'Mão'], // Dậu
+  //   9: ['Dậu', 'Tuất', 'Tý', 'Sửu', 'Mão', 'Thìn'], // Tuất
+  //   10: ['Tuất', 'Hợi', 'Sửu', 'Dần', 'Thìn', 'Tỵ'], // Hợi (Tháng 10 Âm lịch)
+  //   11: ['Hợi', 'Tý', 'Dần', 'Mão', 'Tỵ', 'Ngọ'], // Tý (Tháng 11 Âm lịch)
+  //   12: ['Tý', 'Sửu', 'Mão', 'Thìn', 'Ngọ', 'Mùi'], // Sửu (Tháng 12 Âm lịch)
+  // };
+
+  // // NGAY_HAC_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
+  // readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
+  //   1: ['Dần', 'Mão', 'Ngọ', 'Hợi', 'Dậu', 'Tuất'], // Dần
+  //   2: ['Tý', 'Sửu', 'Thìn', 'Mùi', 'Tuất', 'Hợi'], // Mão
+  //   3: ['Tý', 'Dần', 'Tỵ', 'Thân', 'Hợi', 'Sửu'], // Thìn
+  //   4: ['Tý', 'Sửu', 'Dần', 'Mão', 'Ngọ', 'Dậu'], // Tỵ
+  //   5: ['Dần', 'Mão', 'Thìn', 'Mùi', 'Tuất', 'Sửu'], // Ngọ
+  //   6: ['Dần', 'Mão', 'Thìn', 'Tỵ', 'Thân', 'Hợi'], // Mùi
+  //   7: ['Tý', 'Thìn', 'Tỵ', 'Ngọ', 'Dậu', 'Tý'], // Thân
+  //   8: ['Mùi', 'Tuất', 'Thìn', 'Ngọ', 'Sửu', 'Tỵ'], // Dậu
+  //   9: ['Dần', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Hợi'], // Tuất
+  //   10: ['Tý', 'Mão', 'Ngọ', 'Mùi', 'Thân', 'Dậu'], // Hợi (Tháng 10 Âm lịch)
+  //   11: ['Sửu', 'Thìn', 'Mùi', 'Thân', 'Tuất', 'Sửu'], // Tý
+  //   12: ['Dần', 'Tỵ', 'Thân', 'Hợi', 'Dậu', 'Tuất'], // Sửu
+  // };
+
+  // Bản rút gọn
+  readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
+    1: ['Tý', 'Sửu', 'Tỵ', 'Mùi'], // Dần
+    2: ['Dần', 'Mão', 'Mùi', 'Dậu'], // Mão
+    3: ['Thìn', 'Tỵ', 'Dậu', 'Hợi'], // Thìn
+    4: ['Ngọ', 'Mùi', 'Sửu', 'Dậu'], // Tỵ
+    5: ['Sửu', 'Mão', 'Thân', 'Dậu'], // Ngọ
+    6: ['Mão', 'Tỵ', 'Tuất', 'Hợi'], // Mùi
+    7: ['Tý', 'Sửu', 'Tỵ', 'Mùi'], // Thân
+    8: ['Dần', 'Mão', 'Mùi', 'Dậu'], // Dậu
+    9: ['Thìn', 'Tỵ', 'Dậu', 'Hợi'], // Tuất
+    10: ['Ngọ', 'Mùi', 'Sửu', 'Dậu'], // Hợi (Tháng 10 Âm lịch)
+    11: ['Sửu', 'Mão', 'Thân', 'Dậu'], // Tý (Tháng 11 Âm lịch)
+    12: ['Mão', 'Tỵ', 'Tuất', 'Hợi'], // Sửu (Tháng 12 Âm lịch)
+  };
+
+  readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
+    1: ['Ngọ', 'Mão', 'Hợi', 'Dậu'], // Dần
+    2: ['Thân', 'Tỵ', 'Sửu', 'Hợi'], // Mão
+    3: ['Tuất', 'Mùi', 'Sửu', 'Hợi'], // Thìn
+    4: ['Tý', 'Dậu', 'Tỵ', 'Mão'], // Tỵ
+    5: ['Dần', 'Hợi', 'Mùi', 'Tỵ'], // Ngọ
+    6: ['Thìn', 'Sửu', 'Dậu', 'Mùi'], // Mùi
+    7: ['Ngọ', 'Mão', 'Hợi', 'Dậu'], // Thân
+    8: ['Thân', 'Tỵ', 'Sửu', 'Hợi'], // Dậu
+    9: ['Tuất', 'Mùi', 'Sửu', 'Hợi'], // Tuất
+    10: ['Tý', 'Dậu', 'Tỵ', 'Mão'], // Hợi (Tháng 10 Âm lịch)
+    11: ['Dần', 'Hợi', 'Mùi', 'Tỵ'], // Tý (Tháng 11 Âm lịch)
+    12: ['Thìn', 'Sửu', 'Dậu', 'Mùi'], // Sửu (Tháng 12 Âm lịch)
+  };
+
+  // Ví dụ về cách chuyển đổi từ Chi sang Index (Giả định: Dần=1, Mão=2,...)
+  readonly CHI_TO_INDEX: Record<string, number> = {
+    Dần: 1,
+    Mão: 2,
+    Thìn: 3,
+    Tỵ: 4,
+    Ngọ: 5,
+    Mùi: 6,
+    Thân: 7,
+    Dậu: 8,
+    Tuất: 9,
+    Hợi: 10,
+    Tý: 11,
+    Sửu: 12,
+  };
+
+  readonly SAO_THEO_NGAY: Record<string, string> = {
+    Tý: 'Thanh Long',
+    Sửu: 'Minh Đường',
+    Dần: 'Kim Quỹ',
+    Mão: 'Thiên Đức',
+    Thìn: 'Ngọc Đường',
+    Tỵ: 'Tư Mệnh',
+    Ngọ: 'Thanh Long',
+    Mùi: 'Minh Đường',
+    Thân: 'Kim Quỹ',
+    Dậu: 'Thiên Đức',
+    Tuất: 'Ngọc Đường',
+    Hợi: 'Tư Mệnh',
+  };
+
+  readonly SAO_HOANG_DAO_MAP: Record<string, string> = {
+    Tý: 'Thanh Long',
+    Sửu: 'Minh Đường',
+    Dần: 'Kim Quỹ',
+    Mão: 'Thiên Đức',
+    Thìn: 'Ngọc Đường',
+    Tỵ: 'Tư Mệnh',
+    Ngọ: 'Thanh Long',
+    Mùi: 'Minh Đường',
+    Thân: 'Kim Quỹ',
+    Dậu: 'Thiên Đức',
+    Tuất: 'Ngọc Đường',
+    Hợi: 'Tư Mệnh',
+  };
+
+  // DATA Mới
+  // readonly DS_SAO_HOANG_DAO: Record<string | number, string> = {
+  //   1: 'Thanh Long',
+  //   2: 'Minh Đường',
+  //   3: 'Kim Quý',
+  //   4: 'Kim Đường',
+  //   5: 'Ngọc Đường',
+  //   6: 'Tư Mệnh',
+  // };
+
+  // readonly DS_SAO_HAC_DAO: Record<string | number, string> = {
+  //   1: 'Thiên Hình',
+  //   2: 'Chu Tước',
+  //   3: 'Bạch Hổ',
+  //   4: 'Thiên Lao',
+  //   5: 'Nguyên Vũ',
+  //   6: 'Câu Trận',
+  // };
+
+  // readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO: Record<string | number, string> = {
+  //   1: 'Thanh Long',
+  //   2: 'Minh Đường',
+  //   3: 'Thiên Hình',
+  //   4: 'Chu Tước',
+  //   5: 'Kim Quý',
+  //   6: 'Kim Đường',
+  //   7: 'Bạch Hổ',
+  //   8: 'Ngọc Đường',
+  //   9: 'Thiên Lao',
+  //   10: 'Nguyên Vũ',
+  //   11: 'Tư Mệnh',
+  //   12: 'Câu Trận',
+  // };
+
+  // Tháng Dần, Thân (tháng 1, 7 âm lịch) Ngày tý sẽ bắt đầu là Thanh Long
+  // Tháng Thìn, Tuấn (tháng 3, 9 âm lịch) Ngày thìn sẽ bắt đầu tại thanh Long
+  // Tháng Tỵ, Hơi (tháng 4, 10 âm lịch) Ngày Ngọ sẽ bắt đầu tại thanh Long
+  // Tháng Sửu, Mùi (tháng 12, 6 âm lịch) Ngày Tuất sẽ bắt đầu tại thanh Long
+  // Tháng Mão, Dậu (tháng 2, 8 âm lịch) Ngày Dần sẽ bắt đầu tại thanh Long
+  // Tháng Tỵ, Ngọ (tháng 11, 5 âm lịch) Ngày Thân sẽ bắt đầu tại thanh Long
+
+  // readonly SAO_HAC_DAO_MAP: Record<string, string> = {
+  //   Dần: 'Thiên Hình',
+  //   Thìn: 'Chu Tước',
+  //   Tỵ: 'Bạch Hổ',
+  //   Mùi: 'Ngọc Bồ',
+  //   Tuất: 'Thiên Lao',
+  //   Hợi: 'Huyền Vũ',
+  // };
+
+  // Cập nhật SAO_HAC_DAO_MAP
+  readonly SAO_HAC_DAO_MAP: Record<string, string> = {
+    Tý: 'Bạch Hổ', // Theo quy tắc chuẩn
+    Sửu: 'Chu Tước',
+    Dần: 'Bạch Hổ',
+    Mão: 'Thiên Lao',
+    Thìn: 'Huyền Vũ',
+    Tỵ: 'Nguyên Vũ', // Tên gọi khác của Tư Mệnh (Hắc Đạo)
+    Ngọ: 'Thiên Hình',
+    Mùi: 'Chu Tước',
+    Thân: 'Bạch Hổ',
+    Dậu: 'Thiên Lao',
+    Tuất: 'Huyền Vũ',
+    Hợi: 'Nguyên Vũ',
+  };
+
+  readonly TIET_KHI_DATA: { goc: number; ten: string }[] = [
+    { goc: 315, ten: 'Lập Xuân' },
+    { goc: 330, ten: 'Vũ Thủy' },
+    { goc: 345, ten: 'Kinh Trập' },
+    { goc: 0, ten: 'Xuân Phân' },
+    { goc: 15, ten: 'Thanh Minh' },
+    { goc: 30, ten: 'Cốc Vũ' },
+    { goc: 45, ten: 'Lập Hạ' },
+    { goc: 60, ten: 'Tiểu Mãn' },
+    { goc: 75, ten: 'Mang Chủng' },
+    { goc: 90, ten: 'Hạ Chí' },
+    { goc: 105, ten: 'Tiểu Thử' },
+    { goc: 120, ten: 'Đại Thử' },
+    { goc: 135, ten: 'Lập Thu' },
+    { goc: 150, ten: 'Xử Thử' },
+    { goc: 165, ten: 'Bạch Lộ' },
+    { goc: 180, ten: 'Thu Phân' },
+    { goc: 195, ten: 'Hàn Lộ' },
+    { goc: 210, ten: 'Sương Giáng' },
+    { goc: 225, ten: 'Lập Đông' },
+    { goc: 240, ten: 'Tiểu Tuyết' },
+    { goc: 255, ten: 'Đại Tuyết' },
+    { goc: 270, ten: 'Đông Chí' },
+    { goc: 285, ten: 'Tiểu Hàn' },
+    { goc: 300, ten: 'Đại Hàn' },
+  ];
+
   readonly GIO_HOANG_DAO: Record<string, string[]> = {
     Tý: ['Tý', 'Sửu', 'Mão', 'Ngọ', 'Thân', 'Dậu'],
     Sửu: ['Tý', 'Dần', 'Mão', 'Tỵ', 'Mùi', 'Tuất'],
@@ -403,12 +933,90 @@ export class LichService {
   readonly TRUNG_TANG = ['Nhâm Thân', 'Giáp Thân', 'Canh Thân', 'Mậu Thân'];
   readonly TRUNG_PHUC = ['Quý Dậu', 'Ất Dậu', 'Tân Dậu', 'Kỷ Dậu'];
 
-  readonly LUC_HOP: Record<string, string> = { Tý: 'Sửu', Sửu: 'Tý', Dần: 'Hợi', Mão: 'Tuất', Thìn: 'Dậu', Tỵ: 'Thân', Ngọ: 'Mùi', Mùi: 'Ngọ', Thân: 'Tỵ', Dậu: 'Thìn', Tuất: 'Mão', Hợi: 'Dần' };
-  readonly TAM_HOP: Record<string, string[]> = { Tý: ['Thìn', 'Thân'], Sửu: ['Tỵ', 'Dậu'], Dần: ['Ngọ', 'Tuất'], Mão: ['Mùi', 'Hợi'], Thìn: ['Tý', 'Thân'], Tỵ: ['Sửu', 'Dậu'], Ngọ: ['Dần', 'Tuất'], Mùi: ['Mão', 'Hợi'], Thân: ['Tý', 'Thìn'], Dậu: ['Sửu', 'Tỵ'], Tuất: ['Dần', 'Ngọ'], Hợi: ['Mão', 'Mùi'] };
-  readonly XUNG: Record<string, string> = { Tý: 'Ngọ', Sửu: 'Mùi', Dần: 'Thân', Mão: 'Dậu', Thìn: 'Tuất', Tỵ: 'Hợi', Ngọ: 'Tý', Mùi: 'Sửu', Thân: 'Dần', Dậu: 'Mão', Tuất: 'Thìn', Hợi: 'Tỵ' };
-  readonly HAI: Record<string, string> = { Tý: 'Mùi', Sửu: 'Ngọ', Dần: 'Tỵ', Mão: 'Thìn', Thìn: 'Mão', Tỵ: 'Dần', Ngọ: 'Sửu', Mùi: 'Tý', Thân: 'Hợi', Dậu: 'Tuật', Tuất: 'Dậu', Hợi: 'Thân' };
-  readonly PHA: Record<string, string> = { Tý: 'Dậu', Sửu: 'Tuất', Dần: 'Hợi', Mão: 'Ngọ', Thìn: 'Sửu', Tỵ: 'Thân', Ngọ: 'Mão', Mùi: 'Thìn', Thân: 'Tỵ', Dậu: 'Tý', Tuất: 'Sửu', Hợi: 'Dần' };
-  readonly TUYET: Record<string, string> = { Tý: 'Tỵ', Sửu: 'Ngọ', Dần: 'Mùi', Mão: 'Thân', Thìn: 'Dậu', Tỵ: 'Tuất', Ngọ: 'Hợi', Mùi: 'Tý', Thân: 'Sửu', Dậu: 'Dần', Tuất: 'Mão', Hợi: 'Thìn' };
+  readonly LUC_HOP: Record<string, string> = {
+    Tý: 'Sửu',
+    Sửu: 'Tý',
+    Dần: 'Hợi',
+    Mão: 'Tuất',
+    Thìn: 'Dậu',
+    Tỵ: 'Thân',
+    Ngọ: 'Mùi',
+    Mùi: 'Ngọ',
+    Thân: 'Tỵ',
+    Dậu: 'Thìn',
+    Tuất: 'Mão',
+    Hợi: 'Dần',
+  };
+  readonly TAM_HOP: Record<string, string[]> = {
+    Tý: ['Thìn', 'Thân'],
+    Sửu: ['Tỵ', 'Dậu'],
+    Dần: ['Ngọ', 'Tuất'],
+    Mão: ['Mùi', 'Hợi'],
+    Thìn: ['Tý', 'Thân'],
+    Tỵ: ['Sửu', 'Dậu'],
+    Ngọ: ['Dần', 'Tuất'],
+    Mùi: ['Mão', 'Hợi'],
+    Thân: ['Tý', 'Thìn'],
+    Dậu: ['Sửu', 'Tỵ'],
+    Tuất: ['Dần', 'Ngọ'],
+    Hợi: ['Mão', 'Mùi'],
+  };
+  readonly XUNG: Record<string, string> = {
+    Tý: 'Ngọ',
+    Sửu: 'Mùi',
+    Dần: 'Thân',
+    Mão: 'Dậu',
+    Thìn: 'Tuất',
+    Tỵ: 'Hợi',
+    Ngọ: 'Tý',
+    Mùi: 'Sửu',
+    Thân: 'Dần',
+    Dậu: 'Mão',
+    Tuất: 'Thìn',
+    Hợi: 'Tỵ',
+  };
+  readonly HAI: Record<string, string> = {
+    Tý: 'Mùi',
+    Sửu: 'Ngọ',
+    Dần: 'Tỵ',
+    Mão: 'Thìn',
+    Thìn: 'Mão',
+    Tỵ: 'Dần',
+    Ngọ: 'Sửu',
+    Mùi: 'Tý',
+    Thân: 'Hợi',
+    Dậu: 'Tuật',
+    Tuất: 'Dậu',
+    Hợi: 'Thân',
+  };
+  readonly PHA: Record<string, string> = {
+    Tý: 'Dậu',
+    Sửu: 'Tuất',
+    Dần: 'Hợi',
+    Mão: 'Ngọ',
+    Thìn: 'Sửu',
+    Tỵ: 'Thân',
+    Ngọ: 'Mão',
+    Mùi: 'Thìn',
+    Thân: 'Tỵ',
+    Dậu: 'Tý',
+    Tuất: 'Sửu',
+    Hợi: 'Dần',
+  };
+  readonly TUYET: Record<string, string> = {
+    Tý: 'Tỵ',
+    Sửu: 'Ngọ',
+    Dần: 'Mùi',
+    Mão: 'Thân',
+    Thìn: 'Dậu',
+    Tỵ: 'Tuất',
+    Ngọ: 'Hợi',
+    Mùi: 'Tý',
+    Thân: 'Sửu',
+    Dậu: 'Dần',
+    Tuất: 'Mão',
+    Hợi: 'Thìn',
+  };
 
   readonly BANH_TO: Record<string, string> = {
     Giáp: '“Giáp nhật bất khả thủ hành, xuất hành đa phong ba” - Không nên xuất hành tránh sóng gió.',
@@ -496,40 +1104,286 @@ export class LichService {
     30: 'Tam thập bất quy khách - Kỵ đón khách, dễ gặp điều phiền toái.',
   };
 
-  readonly NHI_THAP_BAT_TU: Record<string, { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string }> = {
-    Giác: { sao: 'Giác Mộc Giao', loai: 'Tốt', moTa: 'Tướng tinh con rồng, chủ trị ngày thứ 1.', nen: 'Tốt cho mọi việc.', ky: 'Kỵ chôn cất.', ngoaiLe: 'Tại Dần, Ngọ, Tuất mọi việc tốt.' },
-    Cang: { sao: 'Cang Kim Long', loai: 'Xấu', moTa: 'Tướng tinh con rồng vàng.', nen: 'Không có việc gì thuận lợi.', ky: 'Kỵ mọi việc lớn.', ngoaiLe: 'Không có ngoại lệ.' },
-    Đê: { sao: 'Đê Thổ Tử', loai: 'Xấu', moTa: 'Tướng tinh con dê.', nen: 'Tốt cho xây dựng.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Phòng: { sao: 'Phòng Nhật Thố', loai: 'Tốt', moTa: 'Tướng tinh con thỏ.', nen: 'Tốt cho cưới hỏi.', ky: 'Kỵ an táng.', ngoaiLe: '' },
-    Tâm: { sao: 'Tâm Nguyệt Hồ', loai: 'Xấu', moTa: 'Tướng tinh con cáo.', nen: 'Không nên làm việc lớn.', ky: 'Kỵ chôn cất và cưới hỏi.', ngoaiLe: '' },
-    Vĩ: { sao: 'Vĩ Hỏa Hổ', loai: 'Tốt', moTa: 'Tướng tinh con hổ.', nen: 'Tốt về mọi mặt.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Cơ: { sao: 'Cơ Thổ Kê', loai: 'Tốt', moTa: 'Tướng tinh con gà.', nen: 'Tốt cho xây dựng và cưới gả.', ky: 'Không kỵ gì.', ngoaiLe: '' },
-    Đẩu: { sao: 'Đẩu Mộc Giải', loai: 'Xấu', moTa: 'Tướng tinh con rái cá.', nen: 'Không có việc gì thuận lợi.', ky: 'Kỵ xuất hành.', ngoaiLe: '' },
-    Ngưu: { sao: 'Ngưu Kim Ngưu', loai: 'Xấu', moTa: 'Tướng tinh con trâu.', nen: 'Không tốt cho việc lớn.', ky: 'Kỵ an táng.', ngoaiLe: '' },
-    Nữ: { sao: 'Nữ Thổ Bức', loai: 'Xấu', moTa: 'Tướng tinh con dơi.', nen: 'Không nên làm việc trọng đại.', ky: 'Kỵ cưới hỏi.', ngoaiLe: '' },
-    Hư: { sao: 'Hư Nhật Thử', loai: 'Xấu', moTa: 'Tướng tinh con chuột.', nen: 'Không nên làm gì.', ky: 'Đại kỵ chôn cất.', ngoaiLe: '' },
-    Nguy: { sao: 'Nguy Nguyệt Yến', loai: 'Xấu', moTa: 'Tướng tinh con chim yến.', nen: 'Không nên khởi sự.', ky: 'Kỵ cưới hỏi.', ngoaiLe: '' },
-    Thất: { sao: 'Thất Hỏa Trư', loai: 'Tốt', moTa: 'Tướng tinh con heo.', nen: 'Tốt cho cưới hỏi, xây dựng.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Bích: { sao: 'Bích Thủy Du', loai: 'Xấu', moTa: 'Tướng tinh con cá.', nen: 'Không nên làm việc lớn.', ky: 'Kỵ khai trương.', ngoaiLe: '' },
-    Khuê: { sao: 'Khuê Mộc Lang', loai: 'Tốt', moTa: 'Tướng tinh con chó sói.', nen: 'Tốt cho mọi việc.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Lâu: { sao: 'Lâu Kim Cẩu', loai: 'Tốt', moTa: 'Tướng tinh con chó.', nen: 'Tốt cho khởi sự.', ky: 'Không kỵ.', ngoaiLe: '' },
-    Vị: { sao: 'Vị Thổ Trĩ', loai: 'Tốt', moTa: 'Tướng tinh con gà rừng.', nen: 'Tốt mọi việc.', ky: 'Kỵ an táng.', ngoaiLe: '' },
-    Mão: { sao: 'Mão Nhật Kê', loai: 'Xấu', moTa: 'Tướng tinh con gà.', nen: 'Không nên làm việc lớn.', ky: 'Kỵ cưới hỏi.', ngoaiLe: '' },
-    Tất: { sao: 'Tất Nguyệt Ô', loai: 'Tốt', moTa: 'Tướng tinh con quạ.', nen: 'Tốt cho việc nhỏ.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Chủy: { sao: 'Chủy Hỏa Hầu', loai: 'Xấu', moTa: 'Tướng tinh con khỉ.', nen: 'Không nên khởi sự.', ky: 'Kỵ khai trương.', ngoaiLe: '' },
-    Sâm: { sao: 'Sâm Thủy Viên', loai: 'Xấu', moTa: 'Tướng tinh con vượn.', nen: 'Không tốt.', ky: 'Kỵ làm nhà.', ngoaiLe: '' },
-    Tỉnh: { sao: 'Tỉnh Mộc Hổ', loai: 'Tốt', moTa: 'Tướng tinh con hổ.', nen: 'Tốt cho xây dựng.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Quỷ: { sao: 'Quỷ Kim Dương', loai: 'Xấu', moTa: 'Tướng tinh con dê.', nen: 'Không làm việc lớn.', ky: 'Kỵ cưới hỏi.', ngoaiLe: '' },
-    Liễu: { sao: 'Liễu Thủy Hầu', loai: 'Xấu', moTa: 'Tướng tinh con khỉ nước.', nen: 'Không tốt.', ky: 'Kỵ chôn cất.', ngoaiLe: '' },
-    Tinh: { sao: 'Tinh Nhật Mã', loai: 'Tốt', moTa: 'Tướng tinh con ngựa.', nen: 'Tốt cho mọi việc.', ky: 'Kỵ an táng.', ngoaiLe: '' },
-    Trương: { sao: 'Trương Nguyệt Lộc', loai: 'Tốt', moTa: 'Tướng tinh con nai.', nen: 'Tốt cho cầu tài.', ky: 'Không kỵ.', ngoaiLe: '' },
-    Dực: { sao: 'Dực Hỏa Xà', loai: 'Xấu', moTa: 'Tướng tinh con rắn.', nen: 'Nếu cắt áo sẽ sinh tài.', ky: 'Kỵ chôn cất, xây nhà, cưới hỏi.', ngoaiLe: 'Tại Thân - Tý - Thìn rất tốt.' },
-    Chẩn: { sao: 'Chẩn Thổ Trĩ', loai: 'Tốt', moTa: 'Tướng tinh con gà.', nen: 'Tốt cho mọi việc.', ky: 'Kỵ mai táng.', ngoaiLe: '' },
+  readonly NHI_THAP_BAT_TU_KEY: string[] = [
+    'Giác',
+    'Cang',
+    'Đê',
+    'Phòng',
+    'Tâm',
+    'Vĩ',
+    'Cơ',
+    'Đẩu',
+    'Ngưu',
+    'Nữ',
+    'Hư',
+    'Nguy',
+    'Thất',
+    'Bích',
+    'Khuê',
+    'Lâu',
+    'Vị',
+    'Mão',
+    'Tất',
+    'Chủy',
+    'Sâm',
+    'Tỉnh',
+    'Quỷ',
+    'Liễu',
+    'Tinh',
+    'Trương',
+    'Dực',
+    'Chẩn',
+  ];
+
+  readonly NHI_THAP_BAT_TU: Record<
+    string,
+    { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string }
+  > = {
+    Giác: {
+      sao: 'Giác Mộc Giao',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con rồng, chủ trị ngày thứ 1.',
+      nen: 'Tốt cho mọi việc.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: 'Tại Dần, Ngọ, Tuất mọi việc tốt.',
+    },
+    Cang: {
+      sao: 'Cang Kim Long',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con rồng vàng.',
+      nen: 'Không có việc gì thuận lợi.',
+      ky: 'Kỵ mọi việc lớn.',
+      ngoaiLe: 'Không có ngoại lệ.',
+    },
+    Đê: {
+      sao: 'Đê Thổ Tử',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con dê.',
+      nen: 'Tốt cho xây dựng.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Phòng: {
+      sao: 'Phòng Nhật Thố',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con thỏ.',
+      nen: 'Tốt cho cưới hỏi.',
+      ky: 'Kỵ an táng.',
+      ngoaiLe: '',
+    },
+    Tâm: {
+      sao: 'Tâm Nguyệt Hồ',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con cáo.',
+      nen: 'Không nên làm việc lớn.',
+      ky: 'Kỵ chôn cất và cưới hỏi.',
+      ngoaiLe: '',
+    },
+    Vĩ: {
+      sao: 'Vĩ Hỏa Hổ',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con hổ.',
+      nen: 'Tốt về mọi mặt.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Cơ: {
+      sao: 'Cơ Thổ Kê',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con gà.',
+      nen: 'Tốt cho xây dựng và cưới gả.',
+      ky: 'Không kỵ gì.',
+      ngoaiLe: '',
+    },
+    Đẩu: {
+      sao: 'Đẩu Mộc Giải',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con rái cá.',
+      nen: 'Không có việc gì thuận lợi.',
+      ky: 'Kỵ xuất hành.',
+      ngoaiLe: '',
+    },
+    Ngưu: {
+      sao: 'Ngưu Kim Ngưu',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con trâu.',
+      nen: 'Không tốt cho việc lớn.',
+      ky: 'Kỵ an táng.',
+      ngoaiLe: '',
+    },
+    Nữ: {
+      sao: 'Nữ Thổ Bức',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con dơi.',
+      nen: 'Không nên làm việc trọng đại.',
+      ky: 'Kỵ cưới hỏi.',
+      ngoaiLe: '',
+    },
+    Hư: {
+      sao: 'Hư Nhật Thử',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con chuột.',
+      nen: 'Không nên làm gì.',
+      ky: 'Đại kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Nguy: {
+      sao: 'Nguy Nguyệt Yến',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con chim yến.',
+      nen: 'Không nên khởi sự.',
+      ky: 'Kỵ cưới hỏi.',
+      ngoaiLe: '',
+    },
+    Thất: {
+      sao: 'Thất Hỏa Trư',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con heo.',
+      nen: 'Tốt cho cưới hỏi, xây dựng.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Bích: {
+      sao: 'Bích Thủy Du',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con cá.',
+      nen: 'Không nên làm việc lớn.',
+      ky: 'Kỵ khai trương.',
+      ngoaiLe: '',
+    },
+    Khuê: {
+      sao: 'Khuê Mộc Lang',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con chó sói.',
+      nen: 'Tốt cho mọi việc.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Lâu: {
+      sao: 'Lâu Kim Cẩu',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con chó.',
+      nen: 'Tốt cho khởi sự.',
+      ky: 'Không kỵ.',
+      ngoaiLe: '',
+    },
+    Vị: {
+      sao: 'Vị Thổ Trĩ',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con gà rừng.',
+      nen: 'Tốt mọi việc.',
+      ky: 'Kỵ an táng.',
+      ngoaiLe: '',
+    },
+    Mão: {
+      sao: 'Mão Nhật Kê',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con gà.',
+      nen: 'Không nên làm việc lớn.',
+      ky: 'Kỵ cưới hỏi.',
+      ngoaiLe: '',
+    },
+    Tất: {
+      sao: 'Tất Nguyệt Ô',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con quạ.',
+      nen: 'Tốt cho việc nhỏ.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Chủy: {
+      sao: 'Chủy Hỏa Hầu',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con khỉ.',
+      nen: 'Không nên khởi sự.',
+      ky: 'Kỵ khai trương.',
+      ngoaiLe: '',
+    },
+    Sâm: {
+      sao: 'Sâm Thủy Viên',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con vượn.',
+      nen: 'Không tốt.',
+      ky: 'Kỵ làm nhà.',
+      ngoaiLe: '',
+    },
+    Tỉnh: {
+      sao: 'Tỉnh Mộc Hổ',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con hổ.',
+      nen: 'Tốt cho xây dựng.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Quỷ: {
+      sao: 'Quỷ Kim Dương',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con dê.',
+      nen: 'Không làm việc lớn.',
+      ky: 'Kỵ cưới hỏi.',
+      ngoaiLe: '',
+    },
+    Liễu: {
+      sao: 'Liễu Thủy Hầu',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con khỉ nước.',
+      nen: 'Không tốt.',
+      ky: 'Kỵ chôn cất.',
+      ngoaiLe: '',
+    },
+    Tinh: {
+      sao: 'Tinh Nhật Mã',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con ngựa.',
+      nen: 'Tốt cho mọi việc.',
+      ky: 'Kỵ an táng.',
+      ngoaiLe: '',
+    },
+    Trương: {
+      sao: 'Trương Nguyệt Lộc',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con nai.',
+      nen: 'Tốt cho cầu tài.',
+      ky: 'Không kỵ.',
+      ngoaiLe: '',
+    },
+    Dực: {
+      sao: 'Dực Hỏa Xà',
+      loai: 'Xấu',
+      moTa: 'Tướng tinh con rắn.',
+      nen: 'Nếu cắt áo sẽ sinh tài.',
+      ky: 'Kỵ chôn cất, xây nhà, cưới hỏi.',
+      ngoaiLe: 'Tại Thân - Tý - Thìn rất tốt.',
+    },
+    Chẩn: {
+      sao: 'Chẩn Thổ Trĩ',
+      loai: 'Tốt',
+      moTa: 'Tướng tinh con gà.',
+      nen: 'Tốt cho mọi việc.',
+      ky: 'Kỵ mai táng.',
+      ngoaiLe: '',
+    },
   };
 
-  readonly TRUC_ORDER = ['Kiến', 'Trừ', 'Mãn', 'Bình', 'Định', 'Chấp', 'Phá', 'Nguy', 'Thành', 'Thu', 'Khai', 'Bế'];
+  readonly TRUC_ORDER = [
+    'Kiến',
+    'Trừ',
+    'Mãn',
+    'Bình',
+    'Định',
+    'Chấp',
+    'Phá',
+    'Nguy',
+    'Thành',
+    'Thu',
+    'Khai',
+    'Bế',
+  ];
   readonly TRUC: Record<string, { tot: string; xau: string }> = {
-    Kiến: { tot: 'Khai trương, nhậm chức, cưới hỏi, trồng cây, xuất hành tốt.', xau: 'Kỵ động thổ, chôn cất, đào giếng, lợp nhà.' },
+    Kiến: {
+      tot: 'Khai trương, nhậm chức, cưới hỏi, trồng cây, xuất hành tốt.',
+      xau: 'Kỵ động thổ, chôn cất, đào giếng, lợp nhà.',
+    },
     Trừ: { tot: 'Tốt cho phá dỡ, bỏ cái cũ để làm cái mới.', xau: 'Kỵ cưới hỏi và xây dựng.' },
     Mãn: { tot: 'Tốt cho cưới hỏi, cầu tài, cầu phúc.', xau: 'Kỵ kiện tụng.' },
     Bình: { tot: 'Tốt cho việc nhỏ, bình ổn.', xau: 'Kỵ việc lớn.' },
@@ -543,7 +1397,13 @@ export class LichService {
     Bế: { tot: 'Không có việc tốt.', xau: 'Đại hung, tránh mọi việc quan trọng.' },
   };
 
-  readonly HUONG_XUAT_HANH: Record<string, string> = { HyThan: 'Chính Nam', TaiThan: 'Chính Tây', KyThan: 'Đông Bắc', GiaiThan: 'Đông Nam', PhucThan: 'Bắc' };
+  readonly HUONG_XUAT_HANH: Record<string, string> = {
+    HyThan: 'Chính Nam',
+    TaiThan: 'Chính Tây',
+    KyThan: 'Đông Bắc',
+    GiaiThan: 'Đông Nam',
+    PhucThan: 'Bắc',
+  };
   readonly GIO_XUAT_HANH_LY_THUAN_PHONG: Record<string, string> = {
     Tý: 'Cầu tài không lợi, hay gặp chuyện trái ý. Dễ gặp nạn. Nếu làm việc quan trọng phải cúng tế.',
     Sửu: 'Mọi việc tốt lành, cầu tài được. Xuất hành hướng Tây Nam càng tốt.',
@@ -560,11 +1420,60 @@ export class LichService {
   };
 
   readonly CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý'];
-  readonly CHI = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'];
-  readonly NGU_HANH_CAN: Record<string, string> = { Giáp: 'Mộc', Ất: 'Mộc', Bính: 'Hỏa', Đinh: 'Hỏa', Mậu: 'Thổ', Kỷ: 'Thổ', Canh: 'Kim', Tân: 'Kim', Nhâm: 'Thủy', Quý: 'Thủy' };
-  readonly NGU_HANH_CHI: Record<string, string> = { Tý: 'Thủy', Sửu: 'Thổ', Dần: 'Mộc', Mão: 'Mộc', Thìn: 'Thổ', Tỵ: 'Hỏa', Ngọ: 'Hỏa', Mùi: 'Thổ', Thân: 'Kim', Dậu: 'Kim', Tuất: 'Thổ', Hợi: 'Thủy' };
-  readonly NGU_HANH_SINH: Record<string, string> = { Mộc: 'Hỏa', Hỏa: 'Thổ', Thổ: 'Kim', Kim: 'Thủy', Thủy: 'Mộc' };
-  readonly NGU_HANH_KHAC: Record<string, string> = { Mộc: 'Thổ', Thổ: 'Thủy', Thủy: 'Hỏa', Hỏa: 'Kim', Kim: 'Mộc' };
+  readonly CHI = [
+    'Tý',
+    'Sửu',
+    'Dần',
+    'Mão',
+    'Thìn',
+    'Tỵ',
+    'Ngọ',
+    'Mùi',
+    'Thân',
+    'Dậu',
+    'Tuất',
+    'Hợi',
+  ];
+  readonly NGU_HANH_CAN: Record<string, string> = {
+    Giáp: 'Mộc',
+    Ất: 'Mộc',
+    Bính: 'Hỏa',
+    Đinh: 'Hỏa',
+    Mậu: 'Thổ',
+    Kỷ: 'Thổ',
+    Canh: 'Kim',
+    Tân: 'Kim',
+    Nhâm: 'Thủy',
+    Quý: 'Thủy',
+  };
+  readonly NGU_HANH_CHI: Record<string, string> = {
+    Tý: 'Thủy',
+    Sửu: 'Thổ',
+    Dần: 'Mộc',
+    Mão: 'Mộc',
+    Thìn: 'Thổ',
+    Tỵ: 'Hỏa',
+    Ngọ: 'Hỏa',
+    Mùi: 'Thổ',
+    Thân: 'Kim',
+    Dậu: 'Kim',
+    Tuất: 'Thổ',
+    Hợi: 'Thủy',
+  };
+  readonly NGU_HANH_SINH: Record<string, string> = {
+    Mộc: 'Hỏa',
+    Hỏa: 'Thổ',
+    Thổ: 'Kim',
+    Kim: 'Thủy',
+    Thủy: 'Mộc',
+  };
+  readonly NGU_HANH_KHAC: Record<string, string> = {
+    Mộc: 'Thổ',
+    Thổ: 'Thủy',
+    Thủy: 'Hỏa',
+    Hỏa: 'Kim',
+    Kim: 'Mộc',
+  };
 
   readonly NAP_AM: Record<string, string> = {
     'Giáp Tý': 'Hải Trung Kim',
@@ -673,45 +1582,110 @@ export class LichService {
     'Đại Không Vong': 'Đại hung.',
   };
 
+  // Sao Tốt theo Chi Tháng (Nguyệt Kiến Thần Sát)
+  // Đây là bộ dữ liệu đầy đủ hơn, bao gồm cả những sao như Thiên Quý (thường đi kèm với Nguyệt Đức/Thiên Đức)
+  readonly SAO_TOT_THANG: Record<string, string[]> = {
+    Dần: ['Nguyệt Đức', 'Thiên Đức', 'Thiên Ân', 'Sanh Khí', 'Thiên Y', 'Tứ Tương', 'Thiên Phúc'],
+    Mão: ['Thiên Đức Hợp', 'Nguyệt Đức Hợp', 'Thiên Mã', 'Nguyệt Tài'],
+    Thìn: ['Âm Đức', 'Nguyệt Ân', 'Phúc Đức', 'Thiên Hỷ'],
+    Tỵ: ['Nguyệt Đức', 'Thiên Đức', 'Cát Khánh', 'Ích Hậu', 'Thiên Mã'],
+    Ngọ: ['Thiên Đức Hợp', 'Nguyệt Đức Hợp', 'Nguyệt Không', 'Thiên Quý', 'Thiên Phúc'],
+    Mùi: ['Thánh Tâm', 'Tam Hợp', 'Thiên Hỷ', 'Mẫu Thương'],
+    Thân: ['Nguyệt Đức', 'Thiên Đức', 'Thiên Mã', 'Nguyệt Tài', 'Âm Đức'],
+    Dậu: ['Thiên Đức Hợp', 'Nguyệt Đức Hợp', 'Thiên Ân', 'Sanh Khí'],
+    Tuất: ['Phúc Đức', 'Thiên Quý', 'Thiên Hỷ', 'Nguyệt Ân'],
+    // Tháng Hợi thường có các sao lớn như Thiên Đức, Nguyệt Đức
+    Hợi: ['Thiên Đức', 'Nguyệt Đức', 'Thiên Mã', 'Cát Khánh', 'Nguyệt Ân', 'Thiên Quý'],
+    Tý: ['Thiên Đức Hợp', 'Nguyệt Đức Hợp', 'Tứ Tương', 'Duyệt Tài'],
+    Sửu: ['Nguyệt Đức', 'Thiên Đức', 'Thiên Ân', 'Lộc Khố'],
+  };
+
+  // Sao Xấu theo Chi Tháng (Nguyệt Kiến Thần Sát)
+  readonly SAO_XAU_THANG: Record<string, string[]> = {
+    Dần: ['Nguyệt Hình', 'Tam Tang', 'Cửu Khảo'],
+    Mão: ['Nguyệt Phá', 'Thiên Lao', 'Tứ Phục'],
+    Thìn: ['Nguyệt Hình', 'Thiên Ngục', 'Đại Họa'],
+    Tỵ: ['Tử Thần', 'Tiểu Hao', 'Huyền Vũ'],
+    Ngọ: ['Nguyệt Phá', 'Thiên Ôn', 'Ngũ Quỷ'],
+    Mùi: ['Nguyệt Hình', 'Thiên Hình', 'Bát Tổ'],
+    Thân: ['Đại Hao', 'Kiếp Sát', 'Trùng Tang'],
+    Dậu: ['Thiên Ôn', 'Nguyệt Phá', 'Lục Bại'],
+    Tuất: ['Địa Tang', 'Tam Tai', 'Câu Trận'],
+    Hợi: ['Nguyệt Phá', 'Tử Khí', 'Thiên Tặc', 'Nguyệt Hình'],
+    Tý: ['Đại Hao', 'Tiểu Hao', 'Thiên Lại'],
+    Sửu: ['Nguyệt Phá', 'Tử Thần', 'Hoang Vu'],
+  };
+
   readonly SAO_TOT_CAN: Record<string, string[]> = {
-    Giáp: ['Thiên Đức'],
-    Ất: ['Thiên Đức'],
-    Bính: ['Thiên Hỷ'],
-    Đinh: ['Kim Quỹ'],
-    Mậu: ['Nguyệt Đức'],
-    Kỷ: ['Nguyệt Đức'],
-    Canh: ['Thiên Quý'],
-    Tân: ['Thiên Ân'],
-    Nhâm: ['Thiên Phúc'],
-    Quý: ['Thiên Phúc'],
+    Giáp: ['Thiên Đức', 'Nguyệt Đức', 'Dịch Mã'],
+    Ất: ['Thiên Ân', 'Tứ Tương', 'Thiên Phúc'],
+    Bính: ['Thiên Phúc', 'Lộc Khố', 'Giải Thần'],
+    Đinh: ['Thiên Hỷ', 'Kim Quỹ', 'Nguyệt Tài'],
+    Mậu: ['Thiên Ân', 'Thiên Quý', 'Thiên Quan'],
+    Kỷ: ['Nguyệt Đức', 'Nguyệt Ân', 'Thánh Tâm'],
+    Canh: ['Thiên Quý', 'Thiên Phúc', 'Nguyệt Đức Hợp'],
+    Tân: ['Thiên Đức', 'Âm Đức', 'Nguyệt Ân'],
+    Nhâm: ['Lục Hợp', 'Thiên Quý', 'Tam Hợp'],
+    Quý: ['Thiên Phúc', 'Kim Quỹ', 'Thiên Giải'],
   };
 
   readonly SAO_XAU_CAN: Record<string, string[]> = {
-    Giáp: ['Trùng Tang'],
-    Ất: ['Trùng Phục'],
-    Bính: ['Không Phòng'],
-    Đinh: ['Ly Sàng'],
-    Mậu: ['Huyết Sát'],
-    Kỷ: ['Huyết Sát'],
-    Canh: ['Nguyệt Hư'],
-    Tân: ['Nguyệt Hư'],
-    Nhâm: ['Thiên Cương'],
-    Quý: ['Thiên Cương'],
+    Giáp: ['Đại Hao', 'Kiếp Sát', 'Trùng Tang'],
+    Ất: ['Trùng Phục', 'Lục Bại', 'Câu Trận'],
+    Bính: ['Quan Phù', 'Tứ Kích', 'Thiên Hỏa'],
+    Đinh: ['Thiên Hỏa', 'Ly Sàng', 'Không Phòng'],
+    Mậu: ['Huyết Sát', 'Câu Trần', 'Hoang Vu'],
+    Kỷ: ['Nguyệt Hình', 'Chu Tước', 'Bát Tổ'],
+    Canh: ['Tứ Ly', 'Lục Hại', 'Thiên Cương'],
+    Tân: ['Trùng Tang', 'Bạch Hổ', 'Nguyệt Hư'],
+    Nhâm: ['Bát Tổ', 'Kiếp Sát', 'Thiên Ôn'],
+    Quý: ['Không Phòng', 'Ly Sàng', 'Huyết Chi'],
+  };
+
+  // Cập nhật SAO_TOT_CHI: Bổ sung Thiên Thụy, U Vi Tinh, Yếu Yên vào các Chi Ngày tương ứng
+  // Trong file lich.service.ts
+  readonly SAO_TOT_CHI: Record<string, string[]> = {
+    Tý: ['Cát Khánh', 'Thiên Phúc', 'Thiên Tài', 'Dịch Mã', 'Thiên Giải'],
+    Sửu: ['Nguyệt Đức Hợp', 'Thiên Quan', 'Phúc Sinh', 'Thiên Y'],
+    Dần: ['Sinh Khí', 'Nguyệt Tài', 'Tam Hợp', 'Thiên Đức Hợp'],
+    Mão: ['Thiên Đức Hợp', 'Ích Hậu', 'Giải Thần', 'Nguyệt Tài'],
+    Thìn: ['Phúc Đức', 'Thiên Hỷ', 'Nguyệt Ân', 'Thiên Quan'],
+    Tỵ: ['Thiên Y', 'Giải Thần', 'Lộc Khố', 'Thiên Phúc'],
+    Ngọ: ['Nguyệt Đức', 'Thiên Quý', 'Quan Lộc', 'Thiên Phúc'],
+    Mùi: ['Tam Hợp', 'Cát Khánh', 'Duyệt Tài', 'Thiên Quý'],
+    Thân: ['Âm Đức', 'Lộc Mã', 'Thiên Hỷ', 'Thiên Thụy', 'U Vi Tinh'], // <-- ĐÃ THÊM THIÊN THỤY VÀ U VI TINH
+    Dậu: ['Thiên Phúc', 'Kim Đường', 'Minh Đường', 'Yếu Yên'],
+    Tuất: ['Thiên Ân', 'Phúc Tinh', 'Phổ Hộ', 'Tục Thế'],
+    Hợi: ['Thái Âm', 'Nguyệt Đức', 'Thiên Hỷ', 'Thiên Ân'],
   };
 
   readonly SAO_XAU_CHI: Record<string, string[]> = {
-    Tý: ['Huyết Sát'],
-    Sửu: ['Hoang Vu'],
-    Dần: ['Nguyệt Hình'],
-    Mão: ['Nguyệt Phá'],
-    Thìn: ['Thổ Cấm'],
-    Tỵ: ['Tam Nương'],
-    Ngọ: ['Ngũ Quỷ'],
-    Mùi: ['Tán Tận'],
-    Thân: ['Địa Tặc'],
-    Dậu: ['Không Phòng'],
-    Tuất: ['Bạch Hổ'],
-    Hợi: ['Trùng Tang'],
+    Tý: ['Bệnh Phù', 'Trùng Tang', 'Huyết Sát'],
+    Sửu: ['Nguyệt Hư', 'Hư Không', 'Hoang Vu'],
+    Dần: ['Lục Bại', 'Phục Nhật', 'Nguyệt Hình'],
+    Mão: ['Nguyệt Hình', 'Xích Khẩu', 'Nguyệt Phá'],
+    Thìn: ['Thiên Họa', 'Tam Quan', 'Quan Phù'],
+    Tỵ: ['Đại Hao', 'Tử Thần', 'Xích Khẩu'],
+    Ngọ: ['Phục Đoạn', 'Đại Sát', 'Trùng Phục'],
+    Mùi: ['Nguyệt Sát', 'Thiên Tặc', 'Nguyệt Hư'],
+    Thân: ['Bạch Hổ', 'Kiếp Sát', 'Thiên Lao'],
+    Dậu: ['Thiên Hình', 'Hại Chủ', 'Kiếp Sát'],
+    Tuất: ['Câu Trần', 'Nguyệt Sát', 'Trùng Tang'],
+    Hợi: ['Tử Khí', 'Sát Chủ', 'Âm Dương Sát'],
+  };
+
+  // Trong file lich.service.ts
+  // Sao Sát Cống và Yếu Yên thường là sao đặc biệt theo Chi Tháng
+  readonly SAO_DAC_BIET: Record<string, string[]> = {
+    // Sát Cống (Giải Thần) theo Tháng:
+    Hợi: ['Sát Cống', 'Yếu Yên'], // <-- Bổ sung Yếu Yên
+    Mão: ['Sát Cống'],
+    Mùi: ['Sát Cống'],
+    Tỵ: ['Sát Cống'],
+    Dậu: ['Sát Cống'],
+    Sửu: ['Sát Cống'],
+    // Yếu Yên: thường đi kèm Thiên Quý hoặc Thiên Y trong tháng Ngọ/Dậu
+    Ngọ: ['Yếu Yên'],
   };
 
   readonly NHI_THAP_BAT_TU_LIST = [
@@ -748,4 +1722,3 @@ export class LichService {
   readonly OFFSET_28_TU = -90;
   readonly TRUC_OFFSET = 1;
 }
-

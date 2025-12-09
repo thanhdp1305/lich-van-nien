@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TraCuu } from './commponents/tra-cuu/tra-cuu';
 import { LichAmThang } from './commponents/lich-am-thang/lich-am-thang';
+import { LaBan } from './components/la-ban/la-ban';
 
 const routes: Routes = [
   {
@@ -11,6 +12,10 @@ const routes: Routes = [
   {
     path: 'tra-cuu/thang',
     component: LichAmThang
+  },
+  {
+    path: 'la-ban',
+    component: LaBan
   },
   {
     path: "",
