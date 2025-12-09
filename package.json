@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:docs": "ng build --output-path docs --base-href /lich-van-nien/"
+    "build:docs": "ng build --output-path docs --base-href /lich-van-nien/",
+    "move": "node move-browser.js"
   },
   "prettier": {
     "printWidth": 100,
