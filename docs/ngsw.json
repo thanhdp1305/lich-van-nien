@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1765275218195,
+  "timestamp": 1765300606389,
   "index": "/lich-van-nien/index.html",
   "assetGroups": [
     {
@@ -11,11 +11,11 @@
         "ignoreVary": true
       },
       "urls": [
-        "/lich-van-nien/chunk-L4KRIKLI.js",
-        "/lich-van-nien/chunk-QF3DSQBE.js",
+        "/lich-van-nien/chunk-545WFTQJ.js",
+        "/lich-van-nien/chunk-UFDS4PK3.js",
         "/lich-van-nien/favicon.ico",
         "/lich-van-nien/index.html",
-        "/lich-van-nien/main-5545TGLC.js",
+        "/lich-van-nien/main-4K2QHD5A.js",
         "/lich-van-nien/manifest.webmanifest",
         "/lich-van-nien/polyfills-UZDKQ4T6.js",
         "/lich-van-nien/scripts-TTWY4XDY.js",
@@ -45,8 +45,8 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/lich-van-nien/chunk-L4KRIKLI.js": "3bb39697a11703a259f3a266ab4045d80981f044",
-    "/lich-van-nien/chunk-QF3DSQBE.js": "a99ed1fcf1aac9c1f642184e021b36472195d17a",
+    "/lich-van-nien/chunk-545WFTQJ.js": "8e4c9b713e04b01555b60454a55c78ae14ba8026",
+    "/lich-van-nien/chunk-UFDS4PK3.js": "ec9283e8abd2ac5c4a844b9f2d023e0153f7158d",
     "/lich-van-nien/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
     "/lich-van-nien/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
     "/lich-van-nien/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
@@ -56,8 +56,8 @@
     "/lich-van-nien/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/lich-van-nien/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/lich-van-nien/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/lich-van-nien/index.html": "49858950999b1497de64f8916cdc2004cc4512be",
-    "/lich-van-nien/main-5545TGLC.js": "af21736055d5624eade9c3b204e19570c82e3a48",
+    "/lich-van-nien/index.html": "ab93b00fe8628591f847cf3b6f673b043244bf48",
+    "/lich-van-nien/main-4K2QHD5A.js": "7af5539aa95279578550b69571892e27ca371994",
     "/lich-van-nien/manifest.webmanifest": "b068c4cb6fb0ef94b2cc8cdb2474385b0003f667",
     "/lich-van-nien/polyfills-UZDKQ4T6.js": "38c9b370c0e9f9f932fe77ca39c98f09dc174b4d",
     "/lich-van-nien/scripts-TTWY4XDY.js": "59aa489af6324127a3d773836250da08639d4b26",
