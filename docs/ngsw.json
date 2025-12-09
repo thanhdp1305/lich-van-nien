@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1765301996353,
+  "timestamp": 1765302227684,
   "index": "/lich-van-nien/index.html",
   "assetGroups": [
     {
@@ -11,11 +11,11 @@
         "ignoreVary": true
       },
       "urls": [
-        "/lich-van-nien/chunk-TCOCZLA5.js",
+        "/lich-van-nien/chunk-S43K3AJP.js",
         "/lich-van-nien/chunk-VQVFUFWC.js",
         "/lich-van-nien/favicon.ico",
         "/lich-van-nien/index.html",
-        "/lich-van-nien/main-ZGZFOMPO.js",
+        "/lich-van-nien/main-QRPAHA4D.js",
         "/lich-van-nien/manifest.webmanifest",
         "/lich-van-nien/polyfills-UZDKQ4T6.js",
         "/lich-van-nien/scripts-TTWY4XDY.js",
@@ -45,7 +45,7 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/lich-van-nien/chunk-TCOCZLA5.js": "33760fbcd08e92a54e42f294f6b482c5427792e7",
+    "/lich-van-nien/chunk-S43K3AJP.js": "f3c073af4bfaa9800d7cbeb3d769fbe8bddbc490",
     "/lich-van-nien/chunk-VQVFUFWC.js": "60bc6d0e7eb549a9fcf7ac87da5becaf10a7e6e6",
     "/lich-van-nien/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
     "/lich-van-nien/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
@@ -56,8 +56,8 @@
     "/lich-van-nien/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/lich-van-nien/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/lich-van-nien/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/lich-van-nien/index.html": "220420849b86a51197e12c77753f6f9ef2c612e1",
-    "/lich-van-nien/main-ZGZFOMPO.js": "3cbc310b395efa72183c31107ebdf301c75c06aa",
+    "/lich-van-nien/index.html": "5fd530366f451ac097796ba2fd5c72a1b87d3fc3",
+    "/lich-van-nien/main-QRPAHA4D.js": "1b2aa59a63e599ea025043fb81ad740e89fc115f",
     "/lich-van-nien/manifest.webmanifest": "b068c4cb6fb0ef94b2cc8cdb2474385b0003f667",
     "/lich-van-nien/polyfills-UZDKQ4T6.js": "38c9b370c0e9f9f932fe77ca39c98f09dc174b4d",
     "/lich-van-nien/scripts-TTWY4XDY.js": "59aa489af6324127a3d773836250da08639d4b26",
