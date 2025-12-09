@@ -51,14 +51,14 @@
                 [class.text-muted]="!day.inMonth"
                 class="day-cell"
               >
-                <span
+                <!-- <span
                   class="day-dot"
                   [ngClass]="{
                     'dot-good': day.mood === 'good',
                     'dot-bad': day.mood === 'bad',
                     'dot-neutral': day.mood === 'neutral'
                   }"
-                ></span>
+                ></span> -->
                 <div class="fw-semibold">{{ day.day }}</div>
                 <div class="lunar-text small text-secondary">
                   Âm {{ day.lunarDay }}/{{ day.lunarMonth }}{{ day.lunarLeap ? ' (N)' : '' }}

@@ -471,78 +471,130 @@ export class LichService {
   // }
 
   // Giả định bạn đã có mảng 12 Chi
-  // readonly DS_CHI = [
-  //   'Tý',
-  //   'Sửu',
-  //   'Dần',
-  //   'Mão',
-  //   'Thìn',
-  //   'Tỵ',
-  //   'Ngọ',
-  //   'Mùi',
-  //   'Thân',
-  //   'Dậu',
-  //   'Tuất',
-  //   'Hợi',
-  // ];
+  readonly DS_CHI = [
+    'Tý',
+    'Sửu',
+    'Dần',
+    'Mão',
+    'Thìn',
+    'Tỵ',
+    'Ngọ',
+    'Mùi',
+    'Thân',
+    'Dậu',
+    'Tuất',
+    'Hợi',
+  ];
 
-  // readonly DS_SAO_HOANG_DAO: string[] = [
-  //   'Thanh Long',
-  //   'Minh Đường',
-  //   'Kim Quý',
-  //   'Kim Đường',
-  //   'Ngọc Đường',
-  //   'Tư Mệnh',
-  // ];
+  readonly DS_SAO_HOANG_DAO: string[] = [
+    'Thanh Long',
+    'Minh Đường',
+    'Kim Quý',
+    'Kim Đường',
+    'Ngọc Đường',
+    'Tư Mệnh',
+  ];
 
-  // readonly DS_SAO_HAC_DAO: string[] = [
-  //   'Thiên Hình',
-  //   'Chu Tước',
-  //   'Bạch Hổ',
-  //   'Thiên Lao',
-  //   'Nguyên Vũ',
-  //   'Câu Trận',
-  // ];
+  readonly DS_SAO_HAC_DAO: string[] = [
+    'Thiên Hình',
+    'Chu Tước',
+    'Bạch Hổ',
+    'Thiên Lao',
+    'Nguyên Vũ',
+    'Câu Trận',
+  ];
 
   // // Chu kỳ 12 Sao Hoàng/Hắc Đạo
-  // readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO = [
-  //   'Thanh Long',
-  //   'Minh Đường',
-  //   'Thiên Hình',
-  //   'Chu Tước',
-  //   'Kim Quý',
-  //   'Kim Đường',
-  //   'Bạch Hổ',
-  //   'Ngọc Đường',
-  //   'Thiên Lao',
-  //   'Nguyên Vũ',
-  //   'Tư Mệnh',
-  //   'Câu Trận',
-  // ];
+  readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO = [
+    'Thanh Long',
+    'Minh Đường',
+    'Thiên Hình',
+    'Chu Tước',
+    'Kim Quý',
+    'Kim Đường',
+    'Bạch Hổ',
+    'Ngọc Đường',
+    'Thiên Lao',
+    'Nguyên Vũ',
+    'Tư Mệnh',
+    'Câu Trận',
+  ];
 
-  // // Bản đồ xác định Chi Ngày bắt đầu (tại đó giờ Tý là Thanh Long) theo Chi Tháng
-  // readonly MAP_CHI_THANG_TO_START_DAY_CHI: Record<string, string> = {
-  //   Dần: 'Tý',
-  //   Thân: 'Tý', // Tháng 1, 7 -> Ngày Tý
-  //   Thìn: 'Thìn',
-  //   Tuất: 'Thìn', // Tháng 3, 9 -> Ngày Thìn
-  //   Tỵ: 'Ngọ',
-  //   Hợi: 'Ngọ', // Tháng 4, 10 -> Ngày Ngọ
-  //   Sửu: 'Tuất',
-  //   Mùi: 'Tuất', // Tháng 12, 6 -> Ngày Tuất
-  //   Mão: 'Dần',
-  //   Dậu: 'Dần', // Tháng 2, 8 -> Ngày Dần
-  //   Tý: 'Thân',
-  //   Ngọ: 'Thân', // Tháng 11, 5 -> Ngày Thân
-  // };
+  // Bản đồ xác định Chi Ngày bắt đầu (tại đó giờ Tý là Thanh Long) theo Chi Tháng
+  readonly MAP_CHI_THANG_TO_START_DAY_CHI: Record<string, string> = {
+    Dần: 'Tý',
+    Thân: 'Tý', // Tháng 1, 7 -> Ngày Tý
+    Thìn: 'Thìn',
+    Tuất: 'Thìn', // Tháng 3, 9 -> Ngày Thìn
+    Tỵ: 'Ngọ',
+    Hợi: 'Ngọ', // Tháng 4, 10 -> Ngày Ngọ
+    Sửu: 'Tuất',
+    Mùi: 'Tuất', // Tháng 12, 6 -> Ngày Tuất
+    Mão: 'Dần',
+    Dậu: 'Dần', // Tháng 2, 8 -> Ngày Dần
+    Tý: 'Thân',
+    Ngọ: 'Thân', // Tháng 11, 5 -> Ngày Thân
+  };
 
-  private getHoangDaoStatus(
-    chiNgay: string,
-    chiThang: string
-  ): any {
-    return null;
+  // Giả định hàm này nằm trong class LịchService
+  // Hàm hỗ trợ tìm index của Chi (0-11)
+  private getChiIndex(chi: string): number {
+    return this.DS_CHI.indexOf(chi);
   }
 
+  /**
+   * Tính toán trạng thái Giờ Hoàng Đạo/Hắc Đạo cho cả ngày theo Chi Tháng và Chi Ngày.
+   *
+   * @param chiThang Chi của tháng Âm lịch hiện tại (Ví dụ: 'Dần')
+   * @param chiNgay Chi của ngày Âm lịch hiện tại (Ví dụ: 'Mão')
+   * @returns Mảng các đối tượng chứa chi giờ và tên sao Hoàng/Hắc Đạo.
+   */
+  public getHoangDaoStatus(chiThang: string, chiNgay: string): { chi: string; sao: string }[] | any {
+    const result: { chi: string; sao: string }[] = [];
+
+    // 1. Xác định Chi Ngày Gốc (Chi mà tại đó, giờ Tý là Thanh Long)
+    const chiNgayBatDau = this.MAP_CHI_THANG_TO_START_DAY_CHI[chiThang];
+
+    if (!chiNgayBatDau) {
+      // Xử lý trường hợp không tìm thấy quy tắc (Ví dụ: sai Chi Tháng)
+      return this.DS_CHI.map((chi) => ({ chi, sao: 'Không tìm thấy quy tắc khởi sao' }));
+    }
+
+    // 2. Lấy Index của Chi Ngày Gốc và Chi Ngày Hiện Tại
+    const indexChiNgayBatDau = this.getChiIndex(chiNgayBatDau); // Index của Ngày Gốc (Y)
+    const indexChiNgayHienTai = this.getChiIndex(chiNgay); // Index của Ngày Hiện Tại (X)
+
+    if (indexChiNgayBatDau === -1 || indexChiNgayHienTai === -1) {
+      return this.DS_CHI.map((chi) => ({ chi, sao: 'Lỗi Chi' }));
+    }
+
+    // 3. Tính Index của Sao khởi đầu cho GIỜ TÝ (Start Index Offset)
+    // Công thức: (Index Chi Ngày HT - Index Chi Ngày Gốc + 12) mod 12
+    // Chỉ số này là vị trí của sao tương ứng với giờ Tý (index 0) của ngày hiện tại
+    const indexSaoBatDau = (indexChiNgayHienTai - indexChiNgayBatDau + 12) % 12;
+
+    // 4. Lặp qua 12 Chi (12 giờ) trong ngày
+    for (let i = 0; i < this.DS_CHI.length; i++) {
+      const chiGio = this.DS_CHI[i]; // Chi của giờ hiện tại (Tý, Sửu, Dần,...)
+
+      // i chính là Index của Chi Giờ (Tý=0, Sửu=1,...)
+
+      // 5. Tính Index của Sao cho giờ hiện tại (I_StarH)
+      // Công thức: (Index Sao Khởi đầu (Tý) + Index Chi Giờ) mod 12
+      const indexSao = (indexSaoBatDau + i) % 12;
+
+      const tenSao = this.CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO[indexSao];
+
+      result.push({
+        chi: chiGio,
+        sao: tenSao,
+      });
+
+      console.log(result);
+    }
+
+    return null;
+  }
 
   /**
    * Hàm tổng hợp các sao Cát (Tốt) và Hung (Xấu) dựa trên Can Chi ngày, Trực, Hoàng Đạo/Hắc Đạo.
