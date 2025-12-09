@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { TraCuu } from './commponents/tra-cuu/tra-cuu';
-import { LichAmThang } from './commponents/lich-am-thang/lich-am-thang';
+import { TraCuu } from './components/tra-cuu/tra-cuu';
 import { LaBan } from './components/la-ban/la-ban';
+import { LichAmThang } from './components/lich-am-thang/lich-am-thang';
 
 const routes: Routes = [
   {
