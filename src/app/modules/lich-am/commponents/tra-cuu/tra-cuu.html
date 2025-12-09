@@ -1,0 +1,196 @@
+<div class="container py-3">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-3">Xem ngày tốt xấu - Lịch âm dương</h2>
+      <form class="row g-2 align-items-end" (ngSubmit)="onView()" #form="ngForm">
+        <div class="col-sm-4">
+          <label class="form-label mb-1">Chọn ngày dương lịch</label>
+          <input class="form-control" type="date" name="dateInput" [(ngModel)]="selectedDate" required />
+        </div>
+        <div class="col-sm-auto">
+          <button type="submit" class="btn btn-primary">Xem ngày</button>
+        </div>
+        <div class="col text-end">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary" [class.active]="viewMode==='box'" (click)="switchMode('box')">
+              Chế độ CHUẨN
+            </button>
+            <button type="button" class="btn btn-outline-secondary" [class.active]="viewMode==='text'" (click)="switchMode('text')">
+              Chế độ VĂN BẢN
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (result) {
+    @if (viewMode==='box') {
+    <div class="row row-cols-1 row-cols-md-2 g-3 mt-3">
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Thông tin cơ bản</h5>
+            <p><span class="badge bg-secondary">Dương lịch</span> {{result.solarDate}}</p>
+            <p><span class="badge bg-secondary">Âm lịch</span> {{result.lunarDate}}{{result.lunarLeap ? ' (Nhuận)' : ''}} / {{result.canChiNam}}</p>
+            <p><span class="badge bg-secondary">Can-Chi ngày</span> {{result.canChiNgay}}</p>
+            <p><span class="badge bg-secondary">Can-Chi tháng</span> {{result.canChiThang}}</p>
+            <p><span class="badge bg-secondary">Can-Chi năm</span> {{result.canChiNam}}</p>
+            <p><span class="badge bg-secondary">Nạp âm</span> {{result.napAm}}</p>
+            <p><span class="badge bg-secondary">Đánh giá ngũ hành</span> {{result.nguHanhDanhGia}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Ngũ hành & Quan hệ</h5>
+            <p><strong>Can (ngày):</strong> {{result.nguHanhCan}}</p>
+            <p><strong>Chi (ngày):</strong> {{result.nguHanhChi}}</p>
+            <p>
+              <strong>Lục hợp:</strong> {{result.xungHop.lucHop || '—'}} —
+              <strong>Tam hợp:</strong> {{result.xungHop.tamHop ? result.xungHop.tamHop.join(', ') : '—'}}
+            </p>
+            <p>
+              <strong>Xung:</strong> {{result.xungHop.xung || '—'}} —
+              <strong>Hình/Hại/Phá/Tuyệt:</strong>
+              {{result.xungHop.hinh || ''}} / {{result.xungHop.hai || ''}} / {{result.xungHop.pha || ''}} / {{result.xungHop.tuyet || ''}}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Lục diệu</h5>
+            <p><strong>{{result.lucDieuName}}</strong>: {{result.lucDieuDesc}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Giờ hoàng đạo</h5>
+            <p *ngIf="result.gioHoangDao.length; else noHoangDao">
+              {{result.gioHoangDao.join(', ')}}
+            </p>
+            <ng-template #noHoangDao><span>Không có</span></ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Ngày kỵ / Trùng tang / Trùng phục</h5>
+            <p>{{NGAY_KY.trungTang}}</p>
+            <p>Trùng Tang: {{TRUNG_TANG.join(', ')}}</p>
+            <p>Trùng Phục: {{TRUNG_PHUC.join(', ')}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Bành Tổ (Bách kỵ nhật)</h5>
+            <ul class="mb-0">
+              <li><strong>Theo CAN ngày:</strong> {{result.banhTo.canStr}}</li>
+              <li><strong>Theo CHI ngày:</strong> {{result.banhTo.chiStr}}</li>
+              <li><strong>Theo ngày âm:</strong> {{result.banhTo.lunarStr}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Nhị thập bát tú</h5>
+            <p><strong>{{result.nhiThapBatTu.key}}</strong> — {{result.nhiThapBatTu.data.sao}} ({{result.nhiThapBatTu.data.loai}})</p>
+            <p>{{result.nhiThapBatTu.data.moTa}}</p>
+            <p><strong>Nên:</strong> {{result.nhiThapBatTu.data.nen || '—'}}</p>
+            <p><strong>Kiêng:</strong> {{result.nhiThapBatTu.data.ky || '—'}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Thập nhị kiến trừ (Trực)</h5>
+            <p><strong>{{result.truc.key}}</strong></p>
+            <p><strong>Nên:</strong> {{result.truc.data.tot}}</p>
+            <p><strong>Kiêng:</strong> {{result.truc.data.xau}}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Ngọc hạp - Sao tốt / xấu</h5>
+            <p>Danh sách sao tốt tiêu biểu: {{saoTotTieuBieu.join(', ')}}</p>
+            <p>Danh sách sao xấu tiêu biểu: {{saoXauTieuBieu.join(', ')}}</p>
+            <ul class="mb-0">
+              <li *ngFor="let sao of result.ngocHapList" [ngClass]="{'text-success': sao.type==='good', 'text-danger': sao.type==='bad'}">
+                <strong>{{sao.k}}:</strong> {{sao.v}}
+              </li>
+              <li *ngIf="!result.ngocHapList.length">Không có sao đặc biệt theo phần dữ liệu hiện tại.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Hướng xuất hành</h5>
+            <ul class="mb-0">
+              <li *ngFor="let h of result.huongList"><strong>{{h.k}}:</strong> {{h.v}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Ghi chú giờ xuất hành (Ly Thuần Phong)</h5>
+            <div class="table-responsive">
+              <table class="table table-sm align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Chi</th>
+                    <th>Khung giờ</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let g of result.gioXuatHanhNotes">
+                    <td class="fw-semibold">{{g.chi}}</td>
+                    <td>{{g.range}}</td>
+                    <td>{{g.note}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    @if (viewMode==='text') {
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title">Chế độ văn bản</h5>
+        <pre class="mb-0" style="white-space: pre-wrap;">{{result.textSummary}}</pre>
+      </div>
+    </div>
+    }
+  }
+</div>

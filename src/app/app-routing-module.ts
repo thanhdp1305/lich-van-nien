@@ -6,6 +6,11 @@ const routes: Routes = [
     path: "lich-am",
     loadChildren: () => import("./modules/lich-am/lich-am.module").then((m) => m.LichAmModule),
   },
+  {
+    path: "",
+    redirectTo: "lich-am",
+    pathMatch: "full"
+  }
 ];
 
 @NgModule({
