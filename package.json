@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build:docs": "ng build --output-path docs --base-href /form-builder/"
+    "build:docs": "ng build --output-path docs --base-href /lich-van-nien/"
   },
   "prettier": {
     "printWidth": 100,
