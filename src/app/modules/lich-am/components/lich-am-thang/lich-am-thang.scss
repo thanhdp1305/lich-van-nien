@@ -1,5 +1,5 @@
 table {
-  border-color: #eee;
+  // border-color: #eee;
 }
 
 table td.day-cell {
@@ -25,7 +25,6 @@ thead tr th:first-child {
 }
 
 .day-dot {
-  position: absolute;
   top: 6px;
   right: 8px;
   width: 8px;
@@ -33,6 +32,10 @@ thead tr th:first-child {
   border-radius: 50%;
   display: inline-block;
   background: transparent;
+}
+
+table td.day-cell .day-dot {
+  position: absolute;
 }
 
 .dot-good {

@@ -42,7 +42,7 @@
 </div>
 
 <div class="table-responsive mt-3">
-  <table class="table table-bordered mb-0 text-center align-middle">
+  <table class="table table-bordered mb-0 text-center align-middle border-success">
     <thead class="table-light">
       <tr>
         <th class="bg-success text-white">T2</th>
@@ -73,7 +73,7 @@
           ></span>
           <div class="fw-semibold day mb-2">{{ day.day }}</div>
           <div class="lunar-text small text-secondary">
-            Âm {{ day.lunarDay }}/{{ day.lunarMonth }}{{ day.lunarLeap ? " (N)" : "" }}
+            {{ day.lunarDay }}/{{ day.lunarMonth }}{{ day.lunarLeap ? " (N)" : "" }}
           </div>
           <div class="lunar-text small text-secondary">
             {{ day.canChiNgay }}
@@ -87,6 +87,10 @@
       </tr>
     </tbody>
   </table>
+  <div class="container-fluid bg-white border border-success">
+    <p><span class="day-dot dot-good mt-3"></span> Ngày hoàng đạo</p>
+    <p><span class="day-dot dot-bad"></span> Ngày hắc đạo</p>
+  </div>
 </div>
 
 @if (detail) {
