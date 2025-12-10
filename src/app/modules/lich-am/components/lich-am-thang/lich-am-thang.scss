@@ -1,6 +1,6 @@
 table td.day-cell {
   cursor: pointer;
-  min-width: 60px;
+  // min-width: 60px;
   height: 70px;
   vertical-align: top;
   position: relative;
@@ -9,6 +9,14 @@ table td.day-cell {
 
 table td.day-cell:hover {
   background: #f2f6ff;
+}
+
+table td.day-cell .day {
+  font-size: 1.2rem;
+}
+
+table.table.detail-date tbody tr td:first-child, thead tr th:first-child {
+  max-width: 100px;
 }
 
 .day-dot {
@@ -43,5 +51,13 @@ table td.day-cell:hover {
     line-height: 14px;
     font-size: 11px;
     padding: 6px;
+  }
+
+  table td.day-cell * {
+    font-size: 8px;
+  }
+
+  table td.day-cell .day {
+    font-size: 11px;
   }
 }

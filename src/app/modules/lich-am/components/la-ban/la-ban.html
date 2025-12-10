@@ -1,94 +1,81 @@
-<div class="container py-3">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title text-center mb-4">La bàn phong thủy</h2>
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">La bàn phong thủy</h2>
 
-      <div class="row g-4">
-        <!-- La bàn -->
-        <div class="col-lg-8">
-          <div class="compass-wrapper">
-            <div class="compass" id="compass">
-              <svg viewBox="-100 -100 200 200" id="compassSvg" class="compass-svg">
-                <circle cx="0" cy="0" r="98" fill="rgba(0,0,0,0.05)" />
-                <g id="ticks"></g>
+    <div class="row g-4">
+      <!-- La bàn -->
+      <div class="col-lg-8">
+        <div class="compass-wrapper">
+          <div class="compass" id="compass">
+            <svg viewBox="-100 -100 200 200" id="compassSvg" class="compass-svg">
+              <circle cx="0" cy="0" r="98" fill="rgba(0,0,0,0.05)" />
+              <g id="ticks"></g>
 
-                <!-- Hướng chính -->
-                <text x="0" y="-85" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">N</text>
-                <text x="82" y="8" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">E</text>
-                <text x="0" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">S</text>
-                <text x="-82" y="8" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">W</text>
+              <!-- Hướng chính -->
+              <text x="0" y="-85" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">N</text>
+              <text x="82" y="8" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">E</text>
+              <text x="0" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">S</text>
+              <text x="-82" y="8" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">W</text>
 
-                <!-- Hướng phụ -->
-                <text x="58" y="-58" text-anchor="middle" font-size="10" fill="#666">NE</text>
-                <text x="58" y="66" text-anchor="middle" font-size="10" fill="#666">SE</text>
-                <text x="-58" y="66" text-anchor="middle" font-size="10" fill="#666">SW</text>
-                <text x="-58" y="-58" text-anchor="middle" font-size="10" fill="#666">NW</text>
+              <!-- Hướng phụ -->
+              <text x="58" y="-58" text-anchor="middle" font-size="10" fill="#666">NE</text>
+              <text x="58" y="66" text-anchor="middle" font-size="10" fill="#666">SE</text>
+              <text x="-58" y="66" text-anchor="middle" font-size="10" fill="#666">SW</text>
+              <text x="-58" y="-58" text-anchor="middle" font-size="10" fill="#666">NW</text>
+            </svg>
+
+            <!-- Kim la bàn -->
+            <div id="needle" class="needle"
+              [style.transform]="'translate(-50%,-100%) rotate(' + currentHeading + 'deg)'">
+              <svg viewBox="0 0 10 100" class="needle-svg">
+                <polygon points="5,0 10,30 5,22 0,30" fill="#dc3545"></polygon>
+                <rect x="4" y="30" width="2" height="70" fill="#0066cc"></rect>
               </svg>
-
-              <!-- Kim la bàn -->
-              <div
-                id="needle"
-                class="needle"
-                [style.transform]="'translate(-50%,-100%) rotate(' + currentHeading + 'deg)'"
-              >
-                <svg viewBox="0 0 10 100" class="needle-svg">
-                  <polygon points="5,0 10,30 5,22 0,30" fill="#dc3545"></polygon>
-                  <rect x="4" y="30" width="2" height="70" fill="#0066cc"></rect>
-                </svg>
-              </div>
-
-              <!-- Chấm trung tâm -->
-              <div class="center-dot"></div>
             </div>
+
+            <!-- Chấm trung tâm -->
+            <div class="center-dot"></div>
           </div>
         </div>
+      </div>
 
-        <!-- Panel thông tin -->
-        <div class="col-lg-4">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title mb-3">Thông tin hướng</h5>
+      <!-- Panel thông tin -->
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Thông tin hướng</h5>
 
-              <div class="mb-3">
-                <div class="display-4 fw-bold text-primary mb-2">
-                  {{ currentHeading | number : '1.0-0' }}°
-                </div>
-                <div class="h5 text-muted mb-3">
-                  {{ getDirectionName(currentHeading) }}
-                </div>
+            <p>Test: {{ test }}</p>
+            <div class="mb-3">
+              <div class="display-4 fw-bold text-primary mb-2">
+                {{ currentHeading | number : '1.0-0' }}°
               </div>
-
-              <div class="mb-4">
-                <div class="d-flex align-items-center mb-2">
-                  <span class="badge bg-info me-2">Phong thủy</span>
-                  <span class="fw-semibold">{{ fengShuiMap[getNearestSector(currentHeading)] }}</span>
-                </div>
+              <div class="h5 text-muted mb-3">
+                {{ getDirectionName(currentHeading) }}
               </div>
+            </div>
 
-              <div class="d-grid gap-2">
-                <button
-                  type="button"
-                  class="btn"
-                  [class.btn-success]="!sensorActive"
-                  [class.btn-danger]="sensorActive"
-                  (click)="enableSensor()"
-                >
-                  {{ sensorActive ? '⏸ Tắt cảm biến' : '📍 Dùng cảm biến' }}
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  (click)="reset()"
-                >
-                  🔄 Đặt lại
-                </button>
+            <div class="mb-4">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-info me-2">Phong thủy</span>
+                <span class="fw-semibold">{{ fengShuiMap[getNearestSector(currentHeading)] }}</span>
               </div>
+            </div>
 
-              <div class="mt-4 pt-3 border-top">
-                <small class="text-muted">
-                  💡 Kéo la bàn để xoay hoặc dùng cảm biến trên thiết bị di động
-                </small>
-              </div>
+            <div class="d-grid gap-2">
+              <button type="button" class="btn" [class.btn-success]="!sensorActive" [class.btn-danger]="sensorActive"
+                (click)="enableSensor()">
+                {{ sensorActive ? '⏸ Tắt cảm biến' : '📍 Dùng cảm biến' }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="reset()">
+                🔄 Đặt lại
+              </button>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+              <small class="text-muted">
+                💡 Kéo la bàn để xoay hoặc dùng cảm biến trên thiết bị di động
+              </small>
             </div>
           </div>
         </div>

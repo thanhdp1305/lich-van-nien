@@ -184,6 +184,7 @@ export class LaBan implements AfterViewInit, OnDestroy {
 
     // Xử lý dữ liệu từ cảm biến
     this.deviceOrientationHandler = (e: DeviceOrientationEvent) => {
+      this.test = "có event: " + Math.random();
       if (e.alpha != null) {
         // alpha: 0-360, tăng theo chiều kim đồng hồ khi xoay ngược chiều kim đồng hồ
         // Chuyển đổi để 0° = Bắc, tăng theo chiều kim đồng hồ
@@ -194,6 +195,8 @@ export class LaBan implements AfterViewInit, OnDestroy {
     window.addEventListener('deviceorientation', this.deviceOrientationHandler);
     this.sensorActive = true;
   }
+
+  test = "";
 
   reset() {
     this.currentHeading = 0;

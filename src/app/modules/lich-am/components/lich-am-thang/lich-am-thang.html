@@ -1,14 +1,9 @@
-<div class="card shadow-sm">
+<div class="card">
   <div class="card-body">
     <div class="row g-3 align-items-end">
       <div class="col-auto">
         <label class="form-label mb-1">Năm</label>
-        <input
-          type="number"
-          class="form-control"
-          [(ngModel)]="selectedYear"
-          (change)="onMonthChange()"
-        />
+        <input type="number" class="form-control" [(ngModel)]="selectedYear" (change)="onMonthChange()" />
       </div>
       <div class="col-auto">
         <label class="form-label mb-1">Tháng</label>
@@ -26,140 +21,181 @@
   </div>
 </div>
 
-<div class="card mt-3">
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-bordered mb-0 text-center align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>T2</th>
-            <th>T3</th>
-            <th>T4</th>
-            <th>T5</th>
-            <th>T6</th>
-            <th>T7</th>
-            <th>CN</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let week of weeks">
-            <td
-              *ngFor="let day of week"
-              (click)="selectCell(day)"
-              [class.bg-success-subtle]="day.iso === selectedDateIso"
-              [class.text-muted]="!day.inMonth"
-              class="day-cell"
-            >
-              <!-- <span
-                class="day-dot"
-                [ngClass]="{
-                  'dot-good': day.mood === 'good',
-                  'dot-bad': day.mood === 'bad',
-                  'dot-neutral': day.mood === 'neutral'
-                }"
-              ></span> -->
-              <div class="fw-semibold">{{ day.day }}</div>
-              <div class="lunar-text small text-secondary">
-                Âm {{ day.lunarDay }}/{{ day.lunarMonth }}{{ day.lunarLeap ? ' (N)' : '' }}
-              </div>
-              <div class="lunar-text small text-secondary">
-                {{ day.canChiNgay }}
-              </div>
-              <small *ngIf="day.isToday" class="text-success">Hôm nay</small>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+<div class="table-responsive mt-3">
+  <table class="table table-bordered mb-0 text-center align-middle">
+    <thead class="table-light">
+      <tr>
+        <th class="bg-success text-white">T2</th>
+        <th class="bg-success text-white">T3</th>
+        <th class="bg-success text-white">T4</th>
+        <th class="bg-success text-white">T5</th>
+        <th class="bg-success text-white">T6</th>
+        <th class="bg-success text-white">T7</th>
+        <th class="bg-success text-white">CN</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let week of weeks">
+        <td *ngFor="let day of week" (click)="selectCell(day)" [class.bg-success-subtle]="day.iso === selectedDateIso"
+          [class.text-muted]="!day.inMonth" class="day-cell">
+          <!-- <span
+            class="day-dot"
+            [ngClass]="{
+              'dot-good': day.mood === 'good',
+              'dot-bad': day.mood === 'bad',
+              'dot-neutral': day.mood === 'neutral'
+            }"
+          ></span> -->
+          <div class="fw-semibold day mb-2">{{ day.day }}</div>
+          <div class="lunar-text small text-secondary">
+            Âm {{ day.lunarDay }}/{{ day.lunarMonth }}{{ day.lunarLeap ? ' (N)' : '' }}
+          </div>
+          <div class="lunar-text small text-secondary">
+            {{ day.canChiNgay }}
+          </div>
+          <small *ngIf="day.isToday" class="text-success">Hôm nay</small>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 @if (detail) {
-<div class="card mt-3">
-  <div class="card-header">
-    <strong>Thông tin ngày {{ detail.solarDate }}</strong>
-  </div>
-  <div class="card-body">
-    <p>
-      <span class="badge bg-secondary">Âm lịch</span> {{ detail.lunarDate
-      }}{{ detail.lunarLeap ? ' (Nhuận)' : '' }}
-    </p>
-    <p>
-      <strong>Can-Chi:</strong> {{ detail.canChiNgay }} — <strong>Tháng:</strong>
-      {{ detail.canChiThang }} — <strong>Năm:</strong> {{ detail.canChiNam }}
-    </p>
-    <p><strong>Nạp âm:</strong> {{ detail.napAm }}</p>
-    <p><strong>Ngũ hành:</strong> {{ detail.nguHanhDanhGia }}</p>
-    <p><strong>Lục diệu:</strong> {{ detail.lucDieuName }} - {{ detail.lucDieuDesc }}</p>
-    <p>
-      <strong>Giờ hoàng đạo:</strong>
-      {{ detail.gioHoangDao.length ? detail.gioHoangDao.join(', ') : '—' }}
-    </p>
-    <p>
-      <strong>Sao tốt:</strong>
-      {{ detail.saoTot.join(', ') }}
-    </p>
-    <p>
-      <strong>Sao xấu:</strong>
-      {{ detail.saoXau.join(', ') }}
-    </p>
-    <p class="mb-1">
-      <strong>Nhị thập bát tú:</strong> {{ detail.nhiThapBatTu.key }} —
-      {{ detail.nhiThapBatTu.data.sao }} ({{ detail.nhiThapBatTu.data.loai }})
-    </p>
-    <p class="mb-1">
-      <strong>Trực:</strong> {{ detail.truc.key }} (Nên: {{ detail.truc.data.tot }} | Kiêng:
-      {{ detail.truc.data.xau }})
-    </p>
-    <p class="mb-1">
-      <strong>Bành Tổ:</strong> CAN {{ detail.banhTo.canStr }} | CHI {{ detail.banhTo.chiStr }} | Âm
-      {{ detail.banhTo.lunarStr }}
-    </p>
-    <p class="mb-1">
-      <strong>Ngọc hạp:</strong>
-      <span *ngIf="detail.ngocHapList.length; else noSao">
-        <span *ngFor="let sao of detail.ngocHapList; let last = last">
-          <span
-            [ngClass]="{ 'text-success': sao.type === 'good', 'text-danger': sao.type === 'bad' }"
-            >{{ sao.k }}</span
-          >{{ last ? '' : ', ' }}
-        </span>
-      </span>
-      <ng-template #noSao>Không có sao đặc biệt</ng-template>
-    </p>
-    <div class="mb-2">
-      <strong>Hướng xuất hành:</strong>
-      <ul class="mb-1 ps-3">
-        <li *ngFor="let h of detail.huongList">
-          <strong>{{ h.k }}:</strong> {{ h.v }}
-        </li>
-      </ul>
-    </div>
-    <div class="mt-3">
-      <h6>Giờ xuất hành (Ly Thuần Phong)</h6>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th>Chi</th>
-              <th>Khung giờ</th>
-              <th>Ghi chú</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let g of detail.gioXuatHanhNotes">
-              <td class="fw-semibold">{{ g.chi }}</td>
-              <td>{{ g.range }}</td>
-              <td>{{ g.note }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="mt-3">
-      <h6>Tóm tắt nhanh</h6>
-      <pre class="mb-0" style="white-space: pre-wrap">{{ detail.textSummary }}</pre>
-    </div>
-  </div>
+<div class="table-responsive mt-3 mb-3">
+  <table class="table detail-date table-bordered mb-0 align-middle">
+    <thead class="table-light">
+      <tr>
+        <th class="bg-success text-white text-center fw-bold" colspan="2">THÔNG TIN NGÀY {{ detail.solarDate }}</th>
+        <!-- <th class="bg-success text-white"></th> -->
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="fw-bold">Thông tin cơ bản</td>
+        <td>
+          <p><span class="badge bg-secondary">Dương lịch</span> {{detail.solarDate}}</p>
+          <p><span class="badge bg-secondary">Âm lịch</span> {{detail.lunarDate}}{{detail.lunarLeap ? ' (Nhuận)' : ''}}
+            /
+            {{detail.canChiNam}}</p>
+          <p><span class="badge bg-secondary">Can-Chi ngày</span> {{detail.canChiNgay}}</p>
+          <p><span class="badge bg-secondary">Can-Chi tháng</span> {{detail.canChiThang}}</p>
+          <p><span class="badge bg-secondary">Can-Chi năm</span> {{detail.canChiNam}}</p>
+          <p><span class="badge bg-secondary">Nạp âm</span> {{detail.napAm}}</p>
+          <p><span class="badge bg-secondary">Đánh giá ngũ hành</span> {{detail.nguHanhDanhGia}}</p>
+          <p><span class="badge bg-secondary">Tiết khí</span> {{detail.tietKhi}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Ngũ hành & Quan hệ</td>
+        <td>
+          <p><strong>Can (ngày):</strong> {{detail.nguHanhCan}}</p>
+          <p><strong>Chi (ngày):</strong> {{detail.nguHanhChi}}</p>
+          <p>
+            <strong>Lục hợp:</strong> {{detail.xungHop.lucHop || '—'}} —
+            <strong>Tam hợp:</strong> {{detail.xungHop.tamHop ? detail.xungHop.tamHop.join(', ') : '—'}}
+          </p>
+          <p>
+            <strong>Xung:</strong> {{detail.xungHop.xung || '—'}} —
+            <strong>Hình/Hại/Phá/Tuyệt:</strong>
+            {{detail.xungHop.hinh || ''}} / {{detail.xungHop.hai || ''}} / {{detail.xungHop.pha || ''}} /
+            {{detail.xungHop.tuyet || ''}}
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Lục diệu</td>
+        <td>
+          <p><strong>{{detail.lucDieuName}}</strong>: {{detail.lucDieuDesc}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Giờ hoàng đạo</td>
+        <td>
+          <p *ngIf="detail.gioHoangDao.length; else noHoangDao">
+            {{detail.gioHoangDao.join(', ')}}
+          </p>
+          <ng-template #noHoangDao><span>Không có</span></ng-template>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Thập nhị kiến trừ (Trực)</td>
+        <td>
+          <p><strong>{{detail.truc.key}}</strong></p>
+          <p><strong>Mô tả:</strong> {{detail.truc.data.moTa}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Bành Tổ (Bách kỵ nhật)</td>
+        <td>
+          <ul class="mb-0">
+            <li><strong>Theo CAN ngày:</strong> {{detail.banhTo.canStr}}</li>
+            <li><strong>Theo CHI ngày:</strong> {{detail.banhTo.chiStr}}</li>
+            <li><strong>Theo ngày âm:</strong> {{detail.banhTo.lunarStr}}</li>
+          </ul>
+        </td>
+      </tr>
+      <!-- <tr>
+        <td class="fw-bold">Ngày kỵ / Trùng tang / Trùng phục (Chưa đúng)</td>
+        <td>
+          <p>{{NGAY_KY.trungTang}}</p>
+          <p>Trùng Tang: {{TRUNG_TANG.join(', ')}}</p>
+          <p>Trùng Phục: {{TRUNG_PHUC.join(', ')}}</p>
+        </td>
+      </tr> -->
+      <tr>
+        <td class="fw-bold">Nhị thập bát tú (chưa đúng)</td>
+        <td>
+          <p><strong>{{detail.nhiThapBatTu.key}}</strong> — {{detail.nhiThapBatTu.data.sao}}
+            ({{detail.nhiThapBatTu.data.loai}})</p>
+          <p>{{detail.nhiThapBatTu.data.moTa}}</p>
+          <p><strong>Nên:</strong> {{detail.nhiThapBatTu.data.nen || '—'}}</p>
+          <p><strong>Kiêng:</strong> {{detail.nhiThapBatTu.data.ky || '—'}}</p>
+        </td>
+      </tr>
+      <!-- <tr>
+        <td class="fw-bold">Ngọc hạp - Sao tốt / xấu (chưa đúng)</td>
+        <td>
+          <p>Danh sách sao tốt tiêu biểu: {{saoTotTieuBieu.join(', ')}}</p>
+          <p>Danh sách sao xấu tiêu biểu: {{saoXauTieuBieu.join(', ')}}</p>
+          <ul class="mb-0">
+            <li *ngFor="let sao of detail.ngocHapList"
+              [ngClass]="{'text-success': sao.type==='good', 'text-danger': sao.type==='bad'}">
+              <strong>{{sao.k}}:</strong> {{sao.v}}
+            </li>
+            <li *ngIf="!detail.ngocHapList.length">Không có sao đặc biệt theo phần dữ liệu hiện tại.</li>
+          </ul>
+        </td>
+      </tr> -->
+      <tr>
+        <td class="fw-bold">Hướng xuất hành (chưa đúng)</td>
+        <td>
+          <ul class="mb-0">
+            <li *ngFor="let h of detail.huongList"><strong>{{h.k}}:</strong> {{h.v}}</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="fw-bold">Ghi chú giờ xuất hành (Ly Thuần Phong)</td>
+        <td>
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Chi</th>
+                <th>Khung giờ</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let g of detail.gioXuatHanhNotes">
+                <td class="fw-semibold">{{g.chi}}</td>
+                <td>{{g.range}}</td>
+                <td>{{g.note}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 }
