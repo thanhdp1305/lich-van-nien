@@ -3,10 +3,15 @@
 
 body, html {
   font-family: "Google Sans Flex", sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   background: #eee;
 }
 
 .card {
   border: 0;
+}
+
+.badge {
+  padding: 8px 8px;
+  border-radius: 100px;
 }

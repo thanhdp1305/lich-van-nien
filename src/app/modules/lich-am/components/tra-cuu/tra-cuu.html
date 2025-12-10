@@ -43,9 +43,15 @@
           <p><span class="badge bg-secondary">Âm lịch</span> {{result.lunarDate}}{{result.lunarLeap ? ' (Nhuận)' : ''}}
             /
             {{result.canChiNam}}</p>
-          <p><span class="badge bg-secondary">Can-Chi ngày</span> {{result.canChiNgay}}</p>
-          <p><span class="badge bg-secondary">Can-Chi tháng</span> {{result.canChiThang}}</p>
-          <p><span class="badge bg-secondary">Can-Chi năm</span> {{result.canChiNam}}</p>
+          <p><span class="badge bg-secondary">Can Chi ngày</span> {{result.canChiNgay}}</p>
+          <p><span class="badge bg-secondary">Can Chi tháng</span> {{result.canChiThang}}</p>
+          <p><span class="badge bg-secondary">Can Chi năm</span> {{result.canChiNam}}</p>
+          @if (result.ngayHoangDao.type === 'Hắc đạo') {
+            <p><span class="badge bg-secondary">Ngày hắc đạo</span> Sao {{ result.ngayHoangDao.sao }}</p>
+          }
+          @if (result.ngayHoangDao.type === 'Hoàng đạo') {
+            <p><span class="badge bg-secondary">Ngày hoàng đạo</span> Sao {{ result.ngayHoangDao.sao }}</p>
+          }
           <p><span class="badge bg-secondary">Nạp âm</span> {{result.napAm}}</p>
           <p><span class="badge bg-secondary">Đánh giá ngũ hành</span> {{result.nguHanhDanhGia}}</p>
           <p><span class="badge bg-secondary">Tiết khí</span> {{result.tietKhi}}</p>
@@ -75,7 +81,7 @@
         </td>
       </tr>
       <tr>
-        <td class="fw-bold">Giờ hoàng đạo</td>
+        <td class="fw-bold">Giờ hoàng đạo (chưa đúng)</td>
         <td>
           <p *ngIf="result.gioHoangDao.length; else noHoangDao">
             {{result.gioHoangDao.join(', ')}}

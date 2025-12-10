@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DayDetail, LichService } from '../../services/lich.service';
+import { DateDetailService, DayDetail } from '../../services/date-detail.service';
 
 type DayCell = {
   date: Date;
@@ -12,6 +12,7 @@ type DayCell = {
   lunarMonth: number;
   lunarLeap: boolean;
   canChiNgay: string;
+  ngayHoangHacDao: any
 };
 
 @Component({
@@ -29,7 +30,7 @@ export class LichAmThang implements OnInit {
 
   readonly months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  constructor(private lichService: LichService) {}
+  constructor(private dateDetailService: DateDetailService) {}
 
   ngOnInit(): void {
     this.buildCalendar();
@@ -51,7 +52,7 @@ export class LichAmThang implements OnInit {
   selectDate(date: Date | string): void {
     const iso = typeof date === 'string' ? date : this.toISO(date);
     this.selectedDateIso = iso;
-    this.detail = this.lichService.getDayDetail(iso);
+    this.detail = this.dateDetailService.getDayDetail(iso);
     console.log(this.detail);
   }
 
@@ -104,7 +105,7 @@ export class LichAmThang implements OnInit {
 
   private toCell(d: Date, inMonth: boolean): DayCell {
     const today = new Date();
-    const detail = this.lichService.getDayDetail(d);
+    const detail = this.dateDetailService.getDayDetail(d);
     const [lunarDay, lunarMonth] = detail.lunarDate.split('/').map((x) => Number(x));
     return {
       date: d,
@@ -116,7 +117,8 @@ export class LichAmThang implements OnInit {
       lunarDay: lunarDay || 0,
       lunarMonth: lunarMonth || 0,
       lunarLeap: detail.lunarLeap,
-      canChiNgay: detail.canChiNgay
+      canChiNgay: detail.canChiNgay,
+      ngayHoangHacDao: detail.ngayHoangDao
     };
   }
 

@@ -6,7 +6,7 @@ import { LichAmThang } from './components/lich-am-thang/lich-am-thang';
 
 const routes: Routes = [
   {
-    path: 'tra-cuu',
+    path: 'tra-cuu/ngay',
     component: TraCuu
   },
   {
@@ -19,7 +19,7 @@ const routes: Routes = [
   },
   {
     path: "",
-    redirectTo: "tra-cuu",
+    redirectTo: "tra-cuu/ngay",
     pathMatch: "full"
   }
 ];

@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO } from "../data";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -45,7 +46,7 @@ export type DayDetail = {
 };
 
 @Injectable({ providedIn: "root" })
-export class LichService {
+export class DateDetailService {
   /** API chính: lấy thông tin chi tiết cho 1 ngày (ISO string hoặc Date) */
   getDayDetail(dateInput: string | Date): DayDetail {
     const tz = 7;
@@ -122,6 +123,41 @@ export class LichService {
       saoTot: saoTotXau.saoTot, // TRẢ VỀ KẾT QUẢ
       saoXau: saoTotXau.saoXau, // TRẢ VỀ KẾT QUẢ
     };
+  }
+
+  getJdnAndLunar(dateInput: string | Date) {
+    const tz = 7;
+    const d = typeof dateInput === "string" ? new Date(dateInput) : new Date(dateInput);
+    const dd = d.getDate();
+    const mm = d.getMonth() + 1;
+    const yy = d.getFullYear();
+    const jdn = this.jdFromDate(dd, mm, yy);
+    const lunar = this.convertSolar2Lunar(dd, mm, yy, tz);
+
+    return {
+      jdn,
+      lunar
+    }
+  }
+
+  getCanChiNgayAm(dateInput: string | Date): any {
+    const { jdn, lunar } = this.getJdnAndLunar(dateInput);
+    const canChiNgay = this.getCanChiNgay(jdn);
+    const [canNgay, chiNgay] = canChiNgay.split(" ");
+    const canChiNam = this.getCanChiNam(lunar.lunarYear);
+    const canNamIndex = (lunar.lunarYear + 6) % 10;
+    const canChiThang = this.getCanChiThang(canNamIndex, lunar.lunarMonth);
+    const [canThang, chiThang] = canChiThang.split(" ");
+    const [canNam, chiNam] = canChiNam.split(" ");
+
+    return {
+      canNgay,
+      chiNgay,
+      canThang,
+      chiThang,
+      canNam,
+      chiNam
+    }
   }
 
   get saoTotTieuBieu(): string[] {
@@ -263,7 +299,7 @@ export class LichService {
     return i - 1;
   }
 
-  private convertSolar2Lunar(dd: number, mm: number, yy: number, timeZone: number) {
+  convertSolar2Lunar(dd: number, mm: number, yy: number, timeZone: number) {
     const dayNumber = this.jdFromDate(dd, mm, yy);
     const k = this.INT((dayNumber - 2415021.076998695) / 29.530588853);
     let monthStart = this.getNewMoonDay(k + 1, timeZone);
@@ -301,13 +337,13 @@ export class LichService {
     return { lunarDay, lunarMonth, lunarYear, lunarLeap };
   }
 
-  private getCanChiNgay(jdn: number): string {
+  getCanChiNgay(jdn: number): string {
     const can = this.CAN[(jdn + 9) % 10];
     const chi = this.CHI[(jdn + 1) % 12];
     return `${can} ${chi}`;
   }
 
-  private getCanChiThang(canNamIndex: number, thangAm: number): string {
+  getCanChiThang(canNamIndex: number, thangAm: number): string {
     // const canIndex = (canNamIndex * 12 + thangAm + 3) % 10;
     // const chiIndex = (thangAm + 1) % 12;
     // return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
@@ -327,7 +363,7 @@ export class LichService {
     return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
   }
 
-  private getCanChiNam(nam: number): string {
+  getCanChiNam(nam: number): string {
     const can = this.CAN[(nam + 6) % 10];
     const chi = this.CHI[(nam + 8) % 12];
     return `${can} ${chi}`;
@@ -423,135 +459,38 @@ export class LichService {
     return "Không xác định"; // Trường hợp dự phòng
   }
 
-  private getSaoHoangDao(chiNgay: string) {
-    return this.SAO_HOANG_DAO_MAP[chiNgay] || null;
+  private getSaoHoangDao(index: number) {
+    return DS_SAO_HOANG_DAO[index] || null;
   }
 
-  private getSaoHacDao(chiNgay: string) {
-    return this.SAO_HAC_DAO_MAP[chiNgay] || null;
+  private getSaoHacDao(index: number) {
+    return DS_SAO_HAC_DAO[index] || null;
   }
 
-  // private getHoangDaoStatus(chiNgay: string, chiThang: string) {
-  //   // const hoangDaoList = this.NGAY_HOANG_DAO[chiThang];
+  private getHoangDaoStatus(chiNgay: string, chiThang: string) {
+    // const hoangDaoList = this.NGAY_HOANG_DAO[chiThang];
 
-  //   const chiThangIndex = this.CHI_TO_INDEX[chiThang];
-  //   const isHoangDao = this.NGAY_HOANG_DAO_THANG[chiThangIndex].includes(chiNgay);
-  //   const isHacDao = this.NGAY_HAC_DAO_THANG[chiThangIndex].includes(chiNgay);
+    const chiThangIndex = this.CHI_TO_INDEX[chiThang];
+    const isHoangDao = this.NGAY_HOANG_DAO_THANG[chiThangIndex].includes(chiNgay);
+    const isHacDao = this.NGAY_HAC_DAO_THANG[chiThangIndex].includes(chiNgay);
 
-  //   if (isHoangDao) {
-  //     return {
-  //       type: 'Hoàng đạo',
-  //       good: true,
-  //       sao: this.getSaoHoangDao(chiNgay), // ví dụ Kim Quỹ, Thanh Long…
-  //     };
-  //   } else if (isHacDao) {
-  //     return {
-  //       type: 'Hắc đạo',
-  //       good: false,
-  //       sao: this.getSaoHacDao(chiNgay), // ví dụ Bạch Hổ, Chu Tước…
-  //     };
-  //   } else {
-  //     return null;
-  //   }
-  // }
-
-  // Giả định bạn đã có mảng 12 Chi
-  readonly DS_CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
-
-  readonly DS_SAO_HOANG_DAO: string[] = ["Thanh Long", "Minh Đường", "Kim Quý", "Kim Đường", "Ngọc Đường", "Tư Mệnh"];
-
-  readonly DS_SAO_HAC_DAO: string[] = ["Thiên Hình", "Chu Tước", "Bạch Hổ", "Thiên Lao", "Nguyên Vũ", "Câu Trận"];
-
-  // // Chu kỳ 12 Sao Hoàng/Hắc Đạo
-  readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO = [
-    "Thanh Long",
-    "Minh Đường",
-    "Thiên Hình",
-    "Chu Tước",
-    "Kim Quý",
-    "Kim Đường",
-    "Bạch Hổ",
-    "Ngọc Đường",
-    "Thiên Lao",
-    "Nguyên Vũ",
-    "Tư Mệnh",
-    "Câu Trận",
-  ];
-
-  // Bản đồ xác định Chi Ngày bắt đầu (tại đó giờ Tý là Thanh Long) theo Chi Tháng
-  readonly MAP_CHI_THANG_TO_START_DAY_CHI: Record<string, string> = {
-    Dần: "Tý",
-    Thân: "Tý", // Tháng 1, 7 -> Ngày Tý
-    Thìn: "Thìn",
-    Tuất: "Thìn", // Tháng 3, 9 -> Ngày Thìn
-    Tỵ: "Ngọ",
-    Hợi: "Ngọ", // Tháng 4, 10 -> Ngày Ngọ
-    Sửu: "Tuất",
-    Mùi: "Tuất", // Tháng 12, 6 -> Ngày Tuất
-    Mão: "Dần",
-    Dậu: "Dần", // Tháng 2, 8 -> Ngày Dần
-    Tý: "Thân",
-    Ngọ: "Thân", // Tháng 11, 5 -> Ngày Thân
-  };
-
-  // Giả định hàm này nằm trong class LịchService
-  // Hàm hỗ trợ tìm index của Chi (0-11)
-  private getChiIndex(chi: string): number {
-    return this.DS_CHI.indexOf(chi);
-  }
-
-  /**
-   * Tính toán trạng thái Giờ Hoàng Đạo/Hắc Đạo cho cả ngày theo Chi Tháng và Chi Ngày.
-   *
-   * @param chiThang Chi của tháng Âm lịch hiện tại (Ví dụ: 'Dần')
-   * @param chiNgay Chi của ngày Âm lịch hiện tại (Ví dụ: 'Mão')
-   * @returns Mảng các đối tượng chứa chi giờ và tên sao Hoàng/Hắc Đạo.
-   */
-  public getHoangDaoStatus(chiThang: string, chiNgay: string): { chi: string; sao: string }[] | any {
-    const result: { chi: string; sao: string }[] = [];
-
-    // 1. Xác định Chi Ngày Gốc (Chi mà tại đó, giờ Tý là Thanh Long)
-    const chiNgayBatDau = this.MAP_CHI_THANG_TO_START_DAY_CHI[chiThang];
-
-    if (!chiNgayBatDau) {
-      // Xử lý trường hợp không tìm thấy quy tắc (Ví dụ: sai Chi Tháng)
-      return this.DS_CHI.map((chi) => ({ chi, sao: "Không tìm thấy quy tắc khởi sao" }));
+    if (isHoangDao) {
+      const saoHDidx = this.NGAY_HOANG_DAO_THANG[chiThangIndex].indexOf(chiNgay);
+      return {
+        type: 'Hoàng đạo',
+        good: true,
+        sao: this.getSaoHoangDao(saoHDidx), // ví dụ Kim Quỹ, Thanh Long…
+      };
+    } else if (isHacDao) {
+      const saoHDidx = this.NGAY_HAC_DAO_THANG[chiThangIndex].indexOf(chiNgay);
+      return {
+        type: 'Hắc đạo',
+        good: false,
+        sao: this.getSaoHacDao(saoHDidx), // ví dụ Bạch Hổ, Chu Tước…
+      };
+    } else {
+      return null;
     }
-
-    // 2. Lấy Index của Chi Ngày Gốc và Chi Ngày Hiện Tại
-    const indexChiNgayBatDau = this.getChiIndex(chiNgayBatDau); // Index của Ngày Gốc (Y)
-    const indexChiNgayHienTai = this.getChiIndex(chiNgay); // Index của Ngày Hiện Tại (X)
-
-    if (indexChiNgayBatDau === -1 || indexChiNgayHienTai === -1) {
-      return this.DS_CHI.map((chi) => ({ chi, sao: "Lỗi Chi" }));
-    }
-
-    // 3. Tính Index của Sao khởi đầu cho GIỜ TÝ (Start Index Offset)
-    // Công thức: (Index Chi Ngày HT - Index Chi Ngày Gốc + 12) mod 12
-    // Chỉ số này là vị trí của sao tương ứng với giờ Tý (index 0) của ngày hiện tại
-    const indexSaoBatDau = (indexChiNgayHienTai - indexChiNgayBatDau + 12) % 12;
-
-    // 4. Lặp qua 12 Chi (12 giờ) trong ngày
-    for (let i = 0; i < this.DS_CHI.length; i++) {
-      const chiGio = this.DS_CHI[i]; // Chi của giờ hiện tại (Tý, Sửu, Dần,...)
-
-      // i chính là Index của Chi Giờ (Tý=0, Sửu=1,...)
-
-      // 5. Tính Index của Sao cho giờ hiện tại (I_StarH)
-      // Công thức: (Index Sao Khởi đầu (Tý) + Index Chi Giờ) mod 12
-      const indexSao = (indexSaoBatDau + i) % 12;
-
-      const tenSao = this.CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO[indexSao];
-
-      result.push({
-        chi: chiGio,
-        sao: tenSao,
-      });
-
-      console.log(result);
-    }
-
-    return null;
   }
 
   /**
@@ -637,109 +576,68 @@ export class LichService {
   }
 
   // ----------------- MARK: Dữ liệu -----------------
-  // NGAY_HOANG_DAO: Danh sách các Chi Ngày là Hoàng Đạo cho mỗi Chi Tháng.
-  // NGAY_HOANG_DAO: Danh sách các Chi Ngày là Hoàng Đạo (ngày Tốt) cho mỗi Chi Tháng.
-  // Quy tắc dựa trên Lục Tặc Kim Phù chuẩn: Bắt đầu từ ngày Chi đối xung với Chi Tháng.
-  readonly NGAY_HOANG_DAO: Record<string, string[]> = {
-    // Tháng Dần (Nguyệt Kiến Dần): Hoàng Đạo là Tý, Sửu, Thìn, Tỵ, Mùi, Thân
-    Dần: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Thân"],
-
-    // Tháng Mão (Nguyệt Kiến Mão): Hoàng Đạo là Dần, Mão, Tỵ, Ngọ, Thân, Dậu
-    Mão: ["Dần", "Mão", "Tỵ", "Ngọ", "Thân", "Dậu"],
-
-    // Tháng Thìn (Nguyệt Kiến Thìn): Hoàng Đạo là Mão, Thìn, Ngọ, Mùi, Dậu, Tuất
-    Thìn: ["Mão", "Thìn", "Ngọ", "Mùi", "Dậu", "Tuất"],
-
-    // Tháng Tỵ (Nguyệt Kiến Tỵ): Hoàng Đạo là Thìn, Tỵ, Mùi, Thân, Tuất, Hợi
-    Tỵ: ["Thìn", "Tỵ", "Mùi", "Thân", "Tuất", "Hợi"],
-
-    // Tháng Ngọ (Nguyệt Kiến Ngọ): Hoàng Đạo là Tỵ, Ngọ, Thân, Dậu, Hợi, Tý
-    Ngọ: ["Tỵ", "Ngọ", "Thân", "Dậu", "Hợi", "Tý"],
-
-    // Tháng Mùi (Nguyệt Kiến Mùi): Hoàng Đạo là Ngọ, Mùi, Dậu, Tuất, Tý, Sửu
-    Mùi: ["Ngọ", "Mùi", "Dậu", "Tuất", "Tý", "Sửu"],
-
-    // Tháng Thân (Nguyệt Kiến Thân): Hoàng Đạo là Mùi, Thân, Tuất, Hợi, Sửu, Dần
-    Thân: ["Mùi", "Thân", "Tuất", "Hợi", "Sửu", "Dần"],
-
-    // Tháng Dậu (Nguyệt Kiến Dậu): Hoàng Đạo là Thân, Dậu, Hợi, Tý, Dần, Mão
-    Dậu: ["Thân", "Dậu", "Hợi", "Tý", "Dần", "Mão"],
-
-    // Tháng Tuất (Nguyệt Kiến Tuất): Hoàng Đạo là Dậu, Tuất, Tý, Sửu, Mão, Thìn
-    Tuất: ["Dậu", "Tuất", "Tý", "Sửu", "Mão", "Thìn"],
-
-    // Tháng Hợi (Nguyệt Kiến Hợi): Hoàng Đạo là Tuất, Hợi, Sửu, Dần, Thìn, Tỵ
-    Hợi: ["Tuất", "Hợi", "Sửu", "Dần", "Thìn", "Tỵ"],
-
-    // Tháng Tý (Nguyệt Kiến Tý): Hoàng Đạo là Hợi, Tý, Dần, Mão, Tỵ, Ngọ
-    Tý: ["Hợi", "Tý", "Dần", "Mão", "Tỵ", "Ngọ"],
-
-    // Tháng Sửu (Nguyệt Kiến Sửu): Hoàng Đạo là Tý, Sửu, Mão, Thìn, Ngọ, Mùi
-    Sửu: ["Tý", "Sửu", "Mão", "Thìn", "Ngọ", "Mùi"],
-  };
-
   // NGAY_HOANG_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
-  // readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
-  //   1: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Thân'], // Dần
-  //   2: ['Dần', 'Mão', 'Tỵ', 'Ngọ', 'Thân', 'Dậu'], // Mão
-  //   3: ['Mão', 'Thìn', 'Ngọ', 'Mùi', 'Dậu', 'Tuất'], // Thìn
-  //   4: ['Thìn', 'Tỵ', 'Mùi', 'Thân', 'Tuất', 'Hợi'], // Tỵ
-  //   5: ['Tỵ', 'Ngọ', 'Thân', 'Dậu', 'Hợi', 'Tý'], // Ngọ
-  //   6: ['Ngọ', 'Mùi', 'Dậu', 'Tuất', 'Tý', 'Sửu'], // Mùi
-  //   7: ['Mùi', 'Thân', 'Tuất', 'Hợi', 'Sửu', 'Dần'], // Thân
-  //   8: ['Thân', 'Dậu', 'Hợi', 'Tý', 'Dần', 'Mão'], // Dậu
-  //   9: ['Dậu', 'Tuất', 'Tý', 'Sửu', 'Mão', 'Thìn'], // Tuất
-  //   10: ['Tuất', 'Hợi', 'Sửu', 'Dần', 'Thìn', 'Tỵ'], // Hợi (Tháng 10 Âm lịch)
-  //   11: ['Hợi', 'Tý', 'Dần', 'Mão', 'Tỵ', 'Ngọ'], // Tý (Tháng 11 Âm lịch)
-  //   12: ['Tý', 'Sửu', 'Mão', 'Thìn', 'Ngọ', 'Mùi'], // Sửu (Tháng 12 Âm lịch)
-  // };
+  readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
+    1: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Tuất'], // Dần
+    2: ['Dần', 'Mão', 'Ngọ', 'Mùi', 'Dậu', 'Tý'], // Mão
+    3: ['Thìn', 'Tỵ', 'Thân', 'Dậu', 'Hợi', 'Dần'], // Thìn
+    4: ['Ngọ', 'Mùi', 'Tuất', 'Hợi', 'Sửu', 'Thìn'], // Tỵ
+    5: ['Thân', 'Dậu', 'Tý', 'Sửu', 'Mão', 'Ngọ'], // Ngọ
+    6: ['Tuất', 'Hợi', 'Dần', 'Mão', 'Tỵ', 'Thân'], // Mùi
+    7: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Tuất'], // Thân
+    8: ['Dần', 'Mão', 'Ngọ', 'Mùi', 'Dậu', 'Tý'], // Dậu
+    9: ['Thìn', 'Tỵ', 'Thân', 'Dậu', 'Hợi', 'Dần'], // Tuất
+    10: ['Ngọ', 'Mùi', 'Tuất', 'Hợi', 'Sửu', 'Thìn'], // Hợi (Tháng 10 Âm lịch)
+    11: ['Thân', 'Dậu', 'Tý', 'Sửu', 'Mão', 'Ngọ'], // Tý (Tháng 11 Âm lịch)
+    12: ['Tuất', 'Hợi', 'Dần', 'Mão', 'Tỵ', 'Thân'], // Sửu (Tháng 12 Âm lịch)
+  };
 
   // // NGAY_HAC_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
-  // readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
-  //   1: ['Dần', 'Mão', 'Ngọ', 'Hợi', 'Dậu', 'Tuất'], // Dần
-  //   2: ['Tý', 'Sửu', 'Thìn', 'Mùi', 'Tuất', 'Hợi'], // Mão
-  //   3: ['Tý', 'Dần', 'Tỵ', 'Thân', 'Hợi', 'Sửu'], // Thìn
-  //   4: ['Tý', 'Sửu', 'Dần', 'Mão', 'Ngọ', 'Dậu'], // Tỵ
-  //   5: ['Dần', 'Mão', 'Thìn', 'Mùi', 'Tuất', 'Sửu'], // Ngọ
-  //   6: ['Dần', 'Mão', 'Thìn', 'Tỵ', 'Thân', 'Hợi'], // Mùi
-  //   7: ['Tý', 'Thìn', 'Tỵ', 'Ngọ', 'Dậu', 'Tý'], // Thân
-  //   8: ['Mùi', 'Tuất', 'Thìn', 'Ngọ', 'Sửu', 'Tỵ'], // Dậu
-  //   9: ['Dần', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Hợi'], // Tuất
-  //   10: ['Tý', 'Mão', 'Ngọ', 'Mùi', 'Thân', 'Dậu'], // Hợi (Tháng 10 Âm lịch)
-  //   11: ['Sửu', 'Thìn', 'Mùi', 'Thân', 'Tuất', 'Sửu'], // Tý
-  //   12: ['Dần', 'Tỵ', 'Thân', 'Hợi', 'Dậu', 'Tuất'], // Sửu
-  // };
+  readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
+    1: ['Dần', 'Mão', 'Ngọ', 'Thân', 'Dậu', 'Hợi'], // Dần
+    2: ['Thìn', 'Tỵ', 'Thân', 'Tuất', 'Hợi', 'Sửu'], // Mão
+    3: ['Ngọ', 'Mùi', 'Tuất', 'Tý', 'Sửu', 'Mão'], // Thìn
+    4: ['Thân', 'Dậu', 'Tý', 'Dần', 'Mão', 'Tỵ'], // Tỵ
+    5: ['Tuất', 'Hợi', 'Dần', 'Thìn', 'Tỵ', 'Mùi'], // Ngọ
+    6: ['Tý', 'Sửu', 'Thìn', 'Ngọ', 'Mùi', 'Dậu'], // Mùi
+    7: ['Dần', 'Mão', 'Ngọ', 'Thân', 'Dậu', 'Hợi'], // Thân
+    8: ['Thìn', 'Tỵ', 'Thân', 'Tuất', 'Hợi', 'Sửu'], // Dậu
+    9: ['Ngọ', 'Mùi', 'Tuất', 'Tý', 'Sửu', 'Mão'], // Tuất
+    10: ['Thân', 'Dậu', 'Tý', 'Dần', 'Mão', 'Tỵ'], // Hợi (Tháng 10 Âm lịch)
+    11: ['Tuất', 'Hợi', 'Dần', 'Thìn', 'Tỵ', 'Mùi'], // Tý
+    12: ['Tý', 'Sửu', 'Thìn', 'Ngọ', 'Mùi', 'Dậu'], // Sửu
+  };
 
   // Bản rút gọn
-  readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
-    1: ["Tý", "Sửu", "Tỵ", "Mùi"], // Dần
-    2: ["Dần", "Mão", "Mùi", "Dậu"], // Mão
-    3: ["Thìn", "Tỵ", "Dậu", "Hợi"], // Thìn
-    4: ["Ngọ", "Mùi", "Sửu", "Dậu"], // Tỵ
-    5: ["Sửu", "Mão", "Thân", "Dậu"], // Ngọ
-    6: ["Mão", "Tỵ", "Tuất", "Hợi"], // Mùi
-    7: ["Tý", "Sửu", "Tỵ", "Mùi"], // Thân
-    8: ["Dần", "Mão", "Mùi", "Dậu"], // Dậu
-    9: ["Thìn", "Tỵ", "Dậu", "Hợi"], // Tuất
-    10: ["Ngọ", "Mùi", "Sửu", "Dậu"], // Hợi (Tháng 10 Âm lịch)
-    11: ["Sửu", "Mão", "Thân", "Dậu"], // Tý (Tháng 11 Âm lịch)
-    12: ["Mão", "Tỵ", "Tuất", "Hợi"], // Sửu (Tháng 12 Âm lịch)
-  };
+  // readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
+  //   1: ["Tý", "Sửu", "Tỵ", "Mùi"], // Dần
+  //   2: ["Dần", "Mão", "Mùi", "Dậu"], // Mão
+  //   3: ["Thìn", "Tỵ", "Dậu", "Hợi"], // Thìn
+  //   4: ["Ngọ", "Mùi", "Sửu", "Dậu"], // Tỵ
+  //   5: ["Sửu", "Mão", "Thân", "Dậu"], // Ngọ
+  //   6: ["Mão", "Tỵ", "Tuất", "Hợi"], // Mùi
+  //   7: ["Tý", "Sửu", "Tỵ", "Mùi"], // Thân
+  //   8: ["Dần", "Mão", "Mùi", "Dậu"], // Dậu
+  //   9: ["Thìn", "Tỵ", "Dậu", "Hợi"], // Tuất
+  //   10: ["Ngọ", "Mùi", "Sửu", "Dậu"], // Hợi (Tháng 10 Âm lịch)
+  //   11: ["Sửu", "Mão", "Thân", "Dậu"], // Tý (Tháng 11 Âm lịch)
+  //   12: ["Mão", "Tỵ", "Tuất", "Hợi"], // Sửu (Tháng 12 Âm lịch)
+  // };
 
-  readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
-    1: ["Ngọ", "Mão", "Hợi", "Dậu"], // Dần
-    2: ["Thân", "Tỵ", "Sửu", "Hợi"], // Mão
-    3: ["Tuất", "Mùi", "Sửu", "Hợi"], // Thìn
-    4: ["Tý", "Dậu", "Tỵ", "Mão"], // Tỵ
-    5: ["Dần", "Hợi", "Mùi", "Tỵ"], // Ngọ
-    6: ["Thìn", "Sửu", "Dậu", "Mùi"], // Mùi
-    7: ["Ngọ", "Mão", "Hợi", "Dậu"], // Thân
-    8: ["Thân", "Tỵ", "Sửu", "Hợi"], // Dậu
-    9: ["Tuất", "Mùi", "Sửu", "Hợi"], // Tuất
-    10: ["Tý", "Dậu", "Tỵ", "Mão"], // Hợi (Tháng 10 Âm lịch)
-    11: ["Dần", "Hợi", "Mùi", "Tỵ"], // Tý (Tháng 11 Âm lịch)
-    12: ["Thìn", "Sửu", "Dậu", "Mùi"], // Sửu (Tháng 12 Âm lịch)
-  };
+  // readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
+  //   1: ["Ngọ", "Mão", "Hợi", "Dậu"], // Dần
+  //   2: ["Thân", "Tỵ", "Sửu", "Hợi"], // Mão
+  //   3: ["Tuất", "Mùi", "Sửu", "Hợi"], // Thìn
+  //   4: ["Tý", "Dậu", "Tỵ", "Mão"], // Tỵ
+  //   5: ["Dần", "Hợi", "Mùi", "Tỵ"], // Ngọ
+  //   6: ["Thìn", "Sửu", "Dậu", "Mùi"], // Mùi
+  //   7: ["Ngọ", "Mão", "Hợi", "Dậu"], // Thân
+  //   8: ["Thân", "Tỵ", "Sửu", "Hợi"], // Dậu
+  //   9: ["Tuất", "Mùi", "Sửu", "Hợi"], // Tuất
+  //   10: ["Tý", "Dậu", "Tỵ", "Mão"], // Hợi (Tháng 10 Âm lịch)
+  //   11: ["Dần", "Hợi", "Mùi", "Tỵ"], // Tý (Tháng 11 Âm lịch)
+  //   12: ["Thìn", "Sửu", "Dậu", "Mùi"], // Sửu (Tháng 12 Âm lịch)
+  // };
 
   // Ví dụ về cách chuyển đổi từ Chi sang Index (Giả định: Dần=1, Mão=2,...)
   readonly CHI_TO_INDEX: Record<string, number> = {
@@ -755,102 +653,6 @@ export class LichService {
     Hợi: 10,
     Tý: 11,
     Sửu: 12,
-  };
-
-  readonly SAO_THEO_NGAY: Record<string, string> = {
-    Tý: "Thanh Long",
-    Sửu: "Minh Đường",
-    Dần: "Kim Quỹ",
-    Mão: "Thiên Đức",
-    Thìn: "Ngọc Đường",
-    Tỵ: "Tư Mệnh",
-    Ngọ: "Thanh Long",
-    Mùi: "Minh Đường",
-    Thân: "Kim Quỹ",
-    Dậu: "Thiên Đức",
-    Tuất: "Ngọc Đường",
-    Hợi: "Tư Mệnh",
-  };
-
-  readonly SAO_HOANG_DAO_MAP: Record<string, string> = {
-    Tý: "Thanh Long",
-    Sửu: "Minh Đường",
-    Dần: "Kim Quỹ",
-    Mão: "Thiên Đức",
-    Thìn: "Ngọc Đường",
-    Tỵ: "Tư Mệnh",
-    Ngọ: "Thanh Long",
-    Mùi: "Minh Đường",
-    Thân: "Kim Quỹ",
-    Dậu: "Thiên Đức",
-    Tuất: "Ngọc Đường",
-    Hợi: "Tư Mệnh",
-  };
-
-  // DATA Mới
-  // readonly DS_SAO_HOANG_DAO: Record<string | number, string> = {
-  //   1: 'Thanh Long',
-  //   2: 'Minh Đường',
-  //   3: 'Kim Quý',
-  //   4: 'Kim Đường',
-  //   5: 'Ngọc Đường',
-  //   6: 'Tư Mệnh',
-  // };
-
-  // readonly DS_SAO_HAC_DAO: Record<string | number, string> = {
-  //   1: 'Thiên Hình',
-  //   2: 'Chu Tước',
-  //   3: 'Bạch Hổ',
-  //   4: 'Thiên Lao',
-  //   5: 'Nguyên Vũ',
-  //   6: 'Câu Trận',
-  // };
-
-  // readonly CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO: Record<string | number, string> = {
-  //   1: 'Thanh Long',
-  //   2: 'Minh Đường',
-  //   3: 'Thiên Hình',
-  //   4: 'Chu Tước',
-  //   5: 'Kim Quý',
-  //   6: 'Kim Đường',
-  //   7: 'Bạch Hổ',
-  //   8: 'Ngọc Đường',
-  //   9: 'Thiên Lao',
-  //   10: 'Nguyên Vũ',
-  //   11: 'Tư Mệnh',
-  //   12: 'Câu Trận',
-  // };
-
-  // Tháng Dần, Thân (tháng 1, 7 âm lịch) Ngày tý sẽ bắt đầu là Thanh Long
-  // Tháng Thìn, Tuấn (tháng 3, 9 âm lịch) Ngày thìn sẽ bắt đầu tại thanh Long
-  // Tháng Tỵ, Hơi (tháng 4, 10 âm lịch) Ngày Ngọ sẽ bắt đầu tại thanh Long
-  // Tháng Sửu, Mùi (tháng 12, 6 âm lịch) Ngày Tuất sẽ bắt đầu tại thanh Long
-  // Tháng Mão, Dậu (tháng 2, 8 âm lịch) Ngày Dần sẽ bắt đầu tại thanh Long
-  // Tháng Tỵ, Ngọ (tháng 11, 5 âm lịch) Ngày Thân sẽ bắt đầu tại thanh Long
-
-  // readonly SAO_HAC_DAO_MAP: Record<string, string> = {
-  //   Dần: 'Thiên Hình',
-  //   Thìn: 'Chu Tước',
-  //   Tỵ: 'Bạch Hổ',
-  //   Mùi: 'Ngọc Bồ',
-  //   Tuất: 'Thiên Lao',
-  //   Hợi: 'Huyền Vũ',
-  // };
-
-  // Cập nhật SAO_HAC_DAO_MAP
-  readonly SAO_HAC_DAO_MAP: Record<string, string> = {
-    Tý: "Bạch Hổ", // Theo quy tắc chuẩn
-    Sửu: "Chu Tước",
-    Dần: "Bạch Hổ",
-    Mão: "Thiên Lao",
-    Thìn: "Huyền Vũ",
-    Tỵ: "Nguyên Vũ", // Tên gọi khác của Tư Mệnh (Hắc Đạo)
-    Ngọ: "Thiên Hình",
-    Mùi: "Chu Tước",
-    Thân: "Bạch Hổ",
-    Dậu: "Thiên Lao",
-    Tuất: "Huyền Vũ",
-    Hợi: "Nguyên Vũ",
   };
 
   readonly TIET_KHI_DATA: { goc: number; ten: string }[] = [

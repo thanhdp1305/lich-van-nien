@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { DayDetail, LichService } from '../../services/lich.service';
+import { DateDetailService, DayDetail } from '../../services/date-detail.service';
+import { CalendarService, DayCell } from '../../services/calendar.service';
 
 @Component({
   selector: 'app-tra-cuu',
@@ -10,9 +11,12 @@ import { DayDetail, LichService } from '../../services/lich.service';
 export class TraCuu implements OnInit {
   selectedDate = this.toISODate(new Date());
   viewMode: 'box' | 'text' = 'box';
-  result?: DayDetail;
+  result?: DayDetail | any;
 
-  constructor(private lichService: LichService) {}
+  constructor(
+    private dateDetailService: DateDetailService,
+    private calenderService: CalendarService
+  ) {}
 
   ngOnInit(): void {
     this.onView();
@@ -23,7 +27,7 @@ export class TraCuu implements OnInit {
       return;
     }
 
-    this.result = this.lichService.getDayDetail(this.selectedDate);
+    this.result = this.dateDetailService.getDayDetail(this.selectedDate);
   }
 
   switchMode(mode: 'box' | 'text'): void {
@@ -31,23 +35,23 @@ export class TraCuu implements OnInit {
   }
 
   get saoTotTieuBieu(): string[] {
-    return this.lichService.saoTotTieuBieu;
+    return this.dateDetailService.saoTotTieuBieu;
   }
 
   get saoXauTieuBieu(): string[] {
-    return this.lichService.saoXauTieuBieu;
+    return this.dateDetailService.saoXauTieuBieu;
   }
 
   get NGAY_KY() {
-    return this.lichService.NGAY_KY;
+    return this.dateDetailService.NGAY_KY;
   }
 
   get TRUNG_TANG() {
-    return this.lichService.TRUNG_TANG;
+    return this.dateDetailService.TRUNG_TANG;
   }
 
   get TRUNG_PHUC() {
-    return this.lichService.TRUNG_PHUC;
+    return this.dateDetailService.TRUNG_PHUC;
   }
 
   private toISODate(date: Date): string {
