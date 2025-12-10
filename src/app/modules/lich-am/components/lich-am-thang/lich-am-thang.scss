@@ -19,6 +19,10 @@ table td.day-cell .day {
   font-size: 1.2rem;
 }
 
+table td.day-cell.text-muted {
+  opacity: 0.4;
+}
+
 table.table.detail-date tbody tr td:first-child,
 thead tr th:first-child {
   max-width: 100px;
