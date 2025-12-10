@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1765337527877,
+  "timestamp": 1765350615205,
   "index": "/lich-van-nien/index.html",
   "assetGroups": [
     {
@@ -11,15 +11,15 @@
         "ignoreVary": true
       },
       "urls": [
-        "/lich-van-nien/chunk-FRFHGHGY.js",
-        "/lich-van-nien/chunk-VQVFUFWC.js",
+        "/lich-van-nien/chunk-O5UQDEJ7.js",
+        "/lich-van-nien/chunk-UFDS4PK3.js",
         "/lich-van-nien/favicon.ico",
         "/lich-van-nien/index.html",
-        "/lich-van-nien/main-VXZ2ZJOB.js",
+        "/lich-van-nien/main-3NO6D57R.js",
         "/lich-van-nien/manifest.webmanifest",
         "/lich-van-nien/polyfills-UZDKQ4T6.js",
         "/lich-van-nien/scripts-TTWY4XDY.js",
-        "/lich-van-nien/styles-7QMBPMNK.css"
+        "/lich-van-nien/styles-4ORP4IUO.css"
       ],
       "patterns": []
     },
@@ -45,8 +45,8 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/lich-van-nien/chunk-FRFHGHGY.js": "f99b812b3785078a4c346fe7a20e1e8e1cb14521",
-    "/lich-van-nien/chunk-VQVFUFWC.js": "60bc6d0e7eb549a9fcf7ac87da5becaf10a7e6e6",
+    "/lich-van-nien/chunk-O5UQDEJ7.js": "948802dc7172269872a586ddbc0aba9f6fa17fa4",
+    "/lich-van-nien/chunk-UFDS4PK3.js": "ec9283e8abd2ac5c4a844b9f2d023e0153f7158d",
     "/lich-van-nien/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
     "/lich-van-nien/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
     "/lich-van-nien/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
@@ -56,12 +56,12 @@
     "/lich-van-nien/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
     "/lich-van-nien/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
     "/lich-van-nien/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
-    "/lich-van-nien/index.html": "0f77f1f2bd9869bcc0187d18a55af511f80bd150",
-    "/lich-van-nien/main-VXZ2ZJOB.js": "347ef9edc06b217f0d84608e1fbb2d611bedc87e",
+    "/lich-van-nien/index.html": "d91ca826b38fbd08131776e9f21b26c86e27c86d",
+    "/lich-van-nien/main-3NO6D57R.js": "a97e545a3cd4510ab349e0e532ebd5b47a445a14",
     "/lich-van-nien/manifest.webmanifest": "b068c4cb6fb0ef94b2cc8cdb2474385b0003f667",
     "/lich-van-nien/polyfills-UZDKQ4T6.js": "38c9b370c0e9f9f932fe77ca39c98f09dc174b4d",
     "/lich-van-nien/scripts-TTWY4XDY.js": "59aa489af6324127a3d773836250da08639d4b26",
-    "/lich-van-nien/styles-7QMBPMNK.css": "f3b3e52c32eb372c896c9a08acbae2e42ecb9354"
+    "/lich-van-nien/styles-4ORP4IUO.css": "6d656ac5dc9886b8f342d6a46293b793654eab19"
   },
   "navigationUrls": [
     {
