@@ -9,16 +9,6 @@
       // Chuyển về index.html
       location.replace("/lich-van-nien/");
     </script>
-
-    <script>
-      (function () {
-        if (sessionStorage.redirect) {
-          var redirect = sessionStorage.redirect;
-          delete sessionStorage.redirect;
-          history.replaceState(null, null, redirect);
-        }
-      })();
-    </script>
   </head>
 
   <body></body>
