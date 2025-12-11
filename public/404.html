@@ -1,7 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="refresh" content="0; url=./index.html" />
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <script>
+      // Lưu path hiện tại
+      sessionStorage.redirect = location.pathname + location.search + location.hash;
+      // Chuyển về index.html
+      location.replace("/my-app/");
+    </script>
+
+    <script>
+      (function () {
+        if (sessionStorage.redirect) {
+          var redirect = sessionStorage.redirect;
+          delete sessionStorage.redirect;
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
   </head>
+
   <body></body>
 </html>
