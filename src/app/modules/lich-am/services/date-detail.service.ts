@@ -684,16 +684,16 @@ export class DateDetailService {
 
   readonly GIO_HOANG_DAO: Record<string, string[]> = {
     Tý: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],
-    Sửu: ["Tý", "Dần", "Mão", "Tỵ", "Mùi", "Tuất"],
-    Dần: ["Sửu", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"],
-    Mão: ["Tý", "Dần", "Thìn", "Ngọ", "Mùi", "Dậu"],
-    Thìn: ["Sửu", "Mão", "Ngọ", "Mùi", "Tuất", "Hợi"],
-    Tỵ: ["Tý", "Sửu", "Thìn", "Mùi", "Tuất", "Hợi"],
-    Ngọ: ["Sửu", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"],
-    Mùi: ["Tý", "Mão", "Thìn", "Ngọ", "Dậu", "Tuất"],
-    Thân: ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
-    Dậu: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
-    Tuất: ["Dần", "Mão", "Ngọ", "Thân", "Dậu", "Hợi"],
+    Sửu: ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
+    Dần: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
+    Mão: ["Tý", "Dần", "Mão", "Ngọ", "Mùi", "Dậu"],
+    Thìn: ["Dần", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"],
+    Tỵ: ["Sửu", "Thìn", "Ngọ", "Mùi", "Tuất", "Hợi"],
+    Ngọ: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],
+    Mùi: ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
+    Thân: ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
+    Dậu: ["Tý", "Dần", "Mão", "Ngọ", "Mùi", "Dậu"],
+    Tuất: ["Dần", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"],
     Hợi: ["Sửu", "Thìn", "Ngọ", "Mùi", "Tuất", "Hợi"],
   };
 
