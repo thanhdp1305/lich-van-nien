@@ -60,7 +60,7 @@ export class LichAmThang implements OnInit {
     this.selectedYear = cell.date.getFullYear();
     this.selectedMonth = cell.date.getMonth() + 1;
     this.selectDate(cell.iso);
-    // this.buildCalendar();
+    this.buildCalendar();
   }
 
   private buildCalendar(): void {
