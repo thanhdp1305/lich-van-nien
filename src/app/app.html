@@ -1,48 +1,46 @@
-<nav class="navbar sticky-top navbar-expand-lg bg-success" data-bs-theme="dark">
-  <div class="container">
-    <a class="navbar-brand" href="#"><b>LỊCH VẠN NIÊN</b></a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarScroll">
-      <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="max-height: calc(100vh - 40px);">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/lich-am/tra-cuu/ngay" routerLinkActive="active" ariaCurrentWhenActive="page">Tra cứu</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/lich-am/tra-cuu/thang" routerLinkActive="active" ariaCurrentWhenActive="page">Xem lịch tháng</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/lich-am/la-ban" routerLinkActive="active" ariaCurrentWhenActive="page">La bàn</a>
-        </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Link
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">Action</a></li>
-            <li><a class="dropdown-item" href="#">Another action</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link disabled" aria-disabled="true">Link</a>
-        </li> -->
-      </ul>
-      <!-- <form class="d-flex" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form> -->
-    </div>
-  </div>
-</nav>
+<div class="app-layout">
 
-<div class="container mt-3">
-  <div class="container-fluid">
-    <router-outlet></router-outlet>
-  </div>
+  <!-- TOP NAV -->
+  <nav class="navbar navbar-expand-lg bg-success navbar-dark app-header">
+    <div class="container">
+      <a class="navbar-brand" href="#"><b>LỊCH VẠN NIÊN</b></a>
+
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link"
+               routerLink="/lich-am/tra-cuu/ngay"
+               routerLinkActive="active">
+              Tra cứu
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
+               routerLink="/lich-am/tra-cuu/thang"
+               routerLinkActive="active">
+              Xem lịch tháng
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"
+               routerLink="/lich-am/la-ban"
+               routerLinkActive="active">
+              La bàn
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT (SCROLL ONLY HERE) -->
+  <main class="app-content">
+    <div class="container mt-3">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <app-bottom-nav [tabs]="tabs"></app-bottom-nav>
+
 </div>

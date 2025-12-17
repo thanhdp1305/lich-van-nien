@@ -33,6 +33,7 @@
     "@angular/service-worker": "^20.3.0",
     "@ng-bootstrap/ng-bootstrap": "^19.0.1",
     "@popperjs/core": "^2.11.8",
+    "@thanhdp1305/localstorage-manager": "^1.0.0",
     "bootstrap": "^5.3.8",
     "jquery": "^3.7.1",
     "rxjs": "~7.8.0",

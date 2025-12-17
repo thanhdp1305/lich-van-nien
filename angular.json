@@ -42,7 +42,8 @@
             ],
             "polyfills": [
               "@angular/localize/init"
-            ]
+            ],
+            "preserveSymlinks": true
           },
           "configurations": {
             "production": {

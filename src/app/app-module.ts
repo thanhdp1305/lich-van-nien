@@ -7,6 +7,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { localstorageService } from '@thanhdp1305/localstorage-manager';
+import { CoreModule } from './modules/core/core.module';
 
 @NgModule({
   declarations: [
@@ -23,7 +25,8 @@ import { CommonModule } from '@angular/common';
       registrationStrategy: 'registerWhenStable:30000'
     }),
     NgbModule,
-    RouterOutlet
+    RouterOutlet,
+    CoreModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -31,4 +34,12 @@ import { CommonModule } from '@angular/common';
   ],
   bootstrap: [App]
 })
-export class AppModule { }
+export class AppModule {
+  constructor() {
+    localstorageService.init({
+      prefix: 'thanhdp'
+    });
+
+    localstorageService.setItem('key', '{invalidJson: true')
+  }
+}

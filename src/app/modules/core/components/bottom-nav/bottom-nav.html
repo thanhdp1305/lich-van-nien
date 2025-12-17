@@ -1,0 +1,44 @@
+<!-- bottom-nav.component.html -->
+<nav class="bottom-nav fixed-bottom bg-success text-white d-md-none" data-bs-theme="dark">
+  <ul class="nav nav-pills nav-fill">
+
+    <!-- Visible tabs -->
+    <li class="nav-item" *ngFor="let tab of visibleTabs">
+      <a
+        class="nav-link text-center"
+        [routerLink]="tab.route"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+      >
+        @if (tab.icon) {
+          <span class="material-symbols-outlined"> {{ tab.icon }} </span>
+        }
+        <br />
+        {{ tab.label }}
+      </a>
+    </li>
+
+    <!-- Dropdown -->
+    <li class="nav-item dropdown" *ngIf="overflowTabs.length">
+      <a
+        class="nav-link dropdown-toggle text-center"
+        href="#"
+        data-bs-toggle="dropdown"
+      >
+        <i class="bi bi-three-dots"></i><br />
+        More
+      </a>
+
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li *ngFor="let tab of overflowTabs">
+          <a class="dropdown-item" [routerLink]="tab.route" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <!-- <i *ngIf="tab.icon" [class]="tab.icon + 'me-2'"></i> -->
+            <!-- <i class="fa-sharp fa-solid fa-user"></i> -->
+            {{ tab.label }}
+          </a>
+        </li>
+      </ul>
+    </li>
+
+  </ul>
+</nav>
