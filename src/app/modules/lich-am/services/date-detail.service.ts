@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO } from "../data";
 import { AmLich } from "./am-lich.service";
+import { CanChi } from "./can-chi.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -48,9 +49,10 @@ export type DayDetail = {
 
 @Injectable({ providedIn: "root" })
 export class DateDetailService {
-  constructor(private amLich: AmLich) {
-    
-  }
+  constructor(
+    private amLich: AmLich,
+    private canChi: CanChi
+  ) {}
 
 
   /** API chính: lấy thông tin chi tiết cho 1 ngày (ISO string hoặc Date) */
@@ -62,11 +64,11 @@ export class DateDetailService {
     const yy = d.getFullYear();
     const jdn = this.amLich.jdFromDate(dd, mm, yy);
     const lunar = this.amLich.convertSolar2Lunar(dd, mm, yy, tz);
-    const canChiNgay = this.getCanChiNgay(jdn);
+    const canChiNgay = this.canChi.getCanChiNgay(jdn);
     const [canNgay, chiNgay] = canChiNgay.split(" ");
-    const canChiNam = this.getCanChiNam(lunar.lunarYear);
+    const canChiNam = this.canChi.getCanChiNam(lunar.lunarYear);
     const canNamIndex = (lunar.lunarYear + 6) % 10;
-    const canChiThang = this.getCanChiThang(canNamIndex, lunar.lunarMonth);
+    const canChiThang = this.canChi.getCanChiThang(canNamIndex, lunar.lunarMonth);
     const napAm = this.getNapAmSafe(canNgay, chiNgay);
     const nguHanhDG = this.danhGiaNguHanh(canNgay, chiNgay);
     const xh = this.getXungHopValue(chiNgay);
@@ -131,41 +133,6 @@ export class DateDetailService {
     };
   }
 
-  getJdnAndLunar(dateInput: string | Date) {
-    const tz = 7;
-    const d = typeof dateInput === "string" ? new Date(dateInput) : new Date(dateInput);
-    const dd = d.getDate();
-    const mm = d.getMonth() + 1;
-    const yy = d.getFullYear();
-    const jdn = this.amLich.jdFromDate(dd, mm, yy);
-    const lunar = this.amLich.convertSolar2Lunar(dd, mm, yy, tz);
-
-    return {
-      jdn,
-      lunar
-    }
-  }
-
-  getCanChiNgayAm(dateInput: string | Date): any {
-    const { jdn, lunar } = this.getJdnAndLunar(dateInput);
-    const canChiNgay = this.getCanChiNgay(jdn);
-    const [canNgay, chiNgay] = canChiNgay.split(" ");
-    const canChiNam = this.getCanChiNam(lunar.lunarYear);
-    const canNamIndex = (lunar.lunarYear + 6) % 10;
-    const canChiThang = this.getCanChiThang(canNamIndex, lunar.lunarMonth);
-    const [canThang, chiThang] = canChiThang.split(" ");
-    const [canNam, chiNam] = canChiNam.split(" ");
-
-    return {
-      canNgay,
-      chiNgay,
-      canThang,
-      chiThang,
-      canNam,
-      chiNam
-    }
-  }
-
   get saoTotTieuBieu(): string[] {
     return Object.keys(this.NGOC_HAP_SAO_TOT_FULL).slice(0, 6);
   }
@@ -219,37 +186,30 @@ export class DateDetailService {
     }));
   }
 
-  getCanChiNgay(jdn: number): string {
-    const can = this.CAN[(jdn + 9) % 10];
-    const chi = this.CHI[(jdn + 1) % 12];
-    return `${can} ${chi}`;
-  }
+  // getCanChiNgay(jdn: number): string {
+  //   const can = this.CAN[(jdn + 9) % 10];
+  //   const chi = this.CHI[(jdn + 1) % 12];
+  //   return `${can} ${chi}`;
+  // }
 
-  getCanChiThang(canNamIndex: number, thangAm: number): string {
-    // const canIndex = (canNamIndex * 12 + thangAm + 3) % 10;
-    // const chiIndex = (thangAm + 1) % 12;
-    // return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
+  // getCanChiThang(canNamIndex: number, thangAm: number): string {
+  //   // Index của Can tháng Dần (tháng 1 Âm lịch)
+  //   const canThangDich = (canNamIndex * 2 + 2) % 10;
 
-    // canNamIndex: Can năm (0=Giáp, 1=Ất, ..., 9=Quý)
-    // thangAm: Tháng Âm lịch (1, 2, ..., 12)
+  //   // Can tháng = (Can tháng Dần + (tháng Âm - 1)) mod 10
+  //   const canIndex = (canThangDich + (thangAm - 1)) % 10;
 
-    // Index của Can tháng Dần (tháng 1 Âm lịch)
-    const canThangDich = (canNamIndex * 2 + 2) % 10;
+  //   // Chi tháng = (tháng Âm + 1) mod 12 (vì Chi Tý index 0, Chi Dần index 2)
+  //   const chiIndex = (thangAm + 1) % 12;
 
-    // Can tháng = (Can tháng Dần + (tháng Âm - 1)) mod 10
-    const canIndex = (canThangDich + (thangAm - 1)) % 10;
+  //   return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
+  // }
 
-    // Chi tháng = (tháng Âm + 1) mod 12 (vì Chi Tý index 0, Chi Dần index 2)
-    const chiIndex = (thangAm + 1) % 12;
-
-    return `${this.CAN[canIndex]} ${this.CHI[chiIndex]}`;
-  }
-
-  getCanChiNam(nam: number): string {
-    const can = this.CAN[(nam + 6) % 10];
-    const chi = this.CHI[(nam + 8) % 12];
-    return `${can} ${chi}`;
-  }
+  // getCanChiNam(nam: number): string {
+  //   const can = this.CAN[(nam + 6) % 10];
+  //   const chi = this.CHI[(nam + 8) % 12];
+  //   return `${can} ${chi}`;
+  // }
 
   private getNapAmSafe(can: string, chi: string): string {
     return this.NAP_AM[`${can} ${chi}`] || "";
@@ -963,8 +923,6 @@ export class DateDetailService {
     Hợi: "Rất tốt, kinh doanh thuận lợi, người đi xa sắp về.",
   };
 
-  readonly CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
-  readonly CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
   readonly NGU_HANH_CAN: Record<string, string> = {
     Giáp: "Mộc",
     Ất: "Mộc",

@@ -125,4 +125,19 @@ export class AmLich {
 
     return { lunarDay, lunarMonth, lunarYear, lunarLeap };
   }
+
+  getJdnAndLunar(dateInput: string | Date) {
+    const tz = 7;
+    const d = typeof dateInput === "string" ? new Date(dateInput) : new Date(dateInput);
+    const dd = d.getDate();
+    const mm = d.getMonth() + 1;
+    const yy = d.getFullYear();
+    const jdn = this.jdFromDate(dd, mm, yy);
+    const lunar = this.convertSolar2Lunar(dd, mm, yy, tz);
+
+    return {
+      jdn,
+      lunar
+    }
+  }
 }

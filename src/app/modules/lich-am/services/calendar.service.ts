@@ -1,6 +1,14 @@
 import { Injectable } from "@angular/core";
 import { DateDetailService, DayDetail } from "./date-detail.service";
-import { CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO, DS_CHI, DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, MAP_CHI_THANG_TO_START_DAY_CHI } from "../data";
+import {
+  CHU_KY_LAP_CUA_SAO_HOANG_HAC_DAO,
+  DS_CHI,
+  DS_SAO_HAC_DAO,
+  DS_SAO_HOANG_DAO,
+  MAP_CHI_THANG_TO_START_DAY_CHI,
+} from "../data";
+import { AmLich } from "./am-lich.service";
+import { CanChi } from "./can-chi.service";
 
 export type DayCell = {
   date: Date;
@@ -26,7 +34,7 @@ export class CalendarService {
   selectedDateIso = "";
   weeks: DayCell[][] = [];
 
-  constructor(private dateDetailService: DateDetailService) {}
+  constructor(private dateDetailService: DateDetailService, private amLich: AmLich, private canChi: CanChi) {}
 
   goToday(): void {
     const today = new Date();
@@ -44,7 +52,7 @@ export class CalendarService {
     if (year == this.selectedYear && month == this.selectedMonth) {
       return this.findDateInMonth(date);
     } else {
-      console.log("có gọi")
+      console.log("có gọi");
       this.buildCalendarWithDate(date);
       return this.findDateInMonth(date);
     }
@@ -90,7 +98,7 @@ export class CalendarService {
 
   private toCell(d: Date, inMonth: boolean): DayCell {
     const today = new Date();
-    const {jdn,lunar} = this.dateDetailService.getJdnAndLunar(d);
+    const { jdn, lunar } = this.amLich.getJdnAndLunar(d);
     return {
       date: d,
       iso: this.toISO(d),
@@ -100,7 +108,7 @@ export class CalendarService {
       lunarDay: lunar.lunarDay || 0,
       lunarMonth: lunar.lunarMonth || 0,
       lunarLeap: lunar.lunarLeap === 1,
-      canChiNgay: this.dateDetailService.getCanChiNgay(jdn)
+      canChiNgay: this.canChi.getCanChiNgay(jdn),
     };
   }
 
@@ -115,24 +123,24 @@ export class CalendarService {
   }
 
   private buildHoangHacDaoThang(date: Date) {
-    const { canNgay, chiNgay, canThang, chiThang, canNam, chiNam } = this.dateDetailService.getCanChiNgayAm(date);
+    const { canNgay, chiNgay, canThang, chiThang, canNam, chiNam } = this.canChi.getCanChiNgayAm(date);
 
     const ngayBatDauChuKy = MAP_CHI_THANG_TO_START_DAY_CHI[chiThang];
 
     console.log({ canNgay, chiNgay, canThang, chiThang, canNam, chiNam }, ngayBatDauChuKy);
 
     const weekFlat: any = [...this.weeks].reduce((acc, val) => [...acc, ...val], []);
-    console.log(weekFlat)
+    console.log(weekFlat);
 
     const ngayBatDauIdx = weekFlat.findIndex((date: any) => {
-      const canChi = this.dateDetailService.getCanChiNgayAm(date.date);
+      const canChi = this.canChi.getCanChiNgayAm(date.date);
       if (chiNgay === canChi.chiNgay) {
         return true;
       }
       return false;
     });
 
-    console.log('ngayBatDauIdx', ngayBatDauIdx)
+    console.log("ngayBatDauIdx", ngayBatDauIdx);
 
     let chuKyLap = 0;
     for (let i = ngayBatDauIdx; i < weekFlat.length; i++) {
@@ -157,16 +165,16 @@ export class CalendarService {
     for (let date of weekFlat) {
       if (DS_SAO_HOANG_DAO.includes(date.saoHoanhHacDao)) {
         date.ngayHoangHacDao = {
-          type: 'Hoàng đạo',
+          type: "Hoàng đạo",
           good: true,
-          sao: date.saoHoanhHacDao
-        }
+          sao: date.saoHoanhHacDao,
+        };
       } else if (DS_SAO_HAC_DAO.includes(date.saoHoanhHacDao)) {
         date.ngayHoangHacDao = date.ngayHoangDao = {
-          type: 'Hắc đạo',
+          type: "Hắc đạo",
           good: false,
-          sao: date.saoHoanhHacDao
-        }
+          sao: date.saoHoanhHacDao,
+        };
       }
     }
 
@@ -181,8 +189,8 @@ export class CalendarService {
       return {
         ...date,
         detail: detail.detail,
-        mood: detail.mood
-      }
+        mood: detail.mood,
+      };
     });
     this.weeks = [...this.toWeeksMatrix(weekFlat)];
   }
@@ -192,8 +200,8 @@ export class CalendarService {
 
     return {
       detail,
-      mood: this.getMood(dayCell.ngayHoangHacDao)
-    }
+      mood: this.getMood(dayCell.ngayHoangHacDao),
+    };
   }
 
   private toWeeksMatrix(weeksFlat: any) {
@@ -203,11 +211,11 @@ export class CalendarService {
     }
     return result;
   }
-  
+
   private findDateInMonth(date: Date) {
     const weekFlat: DayCell[] = [...this.weeks].reduce((acc, val) => [...acc, ...val], []);
     return weekFlat.find((d: DayCell) => {
       return d.date.toDateString() === date.toDateString();
-    })
+    });
   }
 }
