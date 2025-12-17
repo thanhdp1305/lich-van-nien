@@ -7,38 +7,33 @@ body, html {
   background: #eee;
 }
 
-/* full height app */
 html, body {
   height: 100%;
   margin: 0;
 }
 
 body {
-  overflow: hidden; // 🚫 body KHÔNG scroll
+  overflow: hidden;
 }
 
-/* Layout wrapper */
 .app-layout {
   height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header */
 .app-header {
   flex: 0 0 auto;
   z-index: 1030;
 }
 
-/* Content scroll area */
 .app-content {
   flex: 1 1 auto;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; // iOS smooth
-  padding-bottom: 80px; // tránh bị bottom-nav che
+  -webkit-overflow-scrolling: touch;
+  // padding-bottom: 80px;
 }
 
-/* Bottom nav */
 app-bottom-nav {
   flex: 0 0 auto;
 }
