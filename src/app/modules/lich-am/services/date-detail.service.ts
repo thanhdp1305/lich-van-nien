@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
-import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO } from "../data";
+import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, NGU_HANH_CAN, NGU_HANH_CHI } from "../data";
 import { AmLich } from "./am-lich.service";
 import { CanChi } from "./can-chi.service";
+import { NguHanh } from "./ngu-hanh.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -51,7 +52,8 @@ export type DayDetail = {
 export class DateDetailService {
   constructor(
     private amLich: AmLich,
-    private canChi: CanChi
+    private canChi: CanChi,
+    private nguHanh: NguHanh
   ) {}
 
 
@@ -70,7 +72,7 @@ export class DateDetailService {
     const canNamIndex = (lunar.lunarYear + 6) % 10;
     const canChiThang = this.canChi.getCanChiThang(canNamIndex, lunar.lunarMonth);
     const napAm = this.getNapAmSafe(canNgay, chiNgay);
-    const nguHanhDG = this.danhGiaNguHanh(canNgay, chiNgay);
+    const nguHanhDG = this.nguHanh.danhGiaNguHanh(canNgay, chiNgay);
     const xh = this.getXungHopValue(chiNgay);
     const lucDieuName = this.LUC_DIEU_THEO_CHI[chiNgay];
     const lucDieuDesc = this.LUC_DIEU[lucDieuName] || "";
@@ -113,8 +115,8 @@ export class DateDetailService {
       canChiNam,
       napAm: napAm || "—",
       nguHanhDanhGia: nguHanhDG,
-      nguHanhCan: `${canNgay} — ${this.NGU_HANH_CAN[canNgay]}`,
-      nguHanhChi: `${chiNgay} — ${this.NGU_HANH_CHI[chiNgay]}`,
+      nguHanhCan: `${canNgay} — ${NGU_HANH_CAN[canNgay]}`,
+      nguHanhChi: `${chiNgay} — ${NGU_HANH_CHI[chiNgay]}`,
       xungHop: xh,
       lucDieuName,
       lucDieuDesc,
@@ -227,15 +229,15 @@ export class DateDetailService {
     };
   }
 
-  private danhGiaNguHanh(can: string, chi: string): string {
-    const hanhCan = this.NGU_HANH_CAN[can];
-    const hanhChi = this.NGU_HANH_CHI[chi];
-    if (this.NGU_HANH_SINH[hanhCan] === hanhChi) return "Can sinh Chi - ngày rất tốt (cát).";
-    if (this.NGU_HANH_SINH[hanhChi] === hanhCan) return "Chi sinh Can - ngày tốt.";
-    if (this.NGU_HANH_KHAC[hanhCan] === hanhChi) return "Can khắc Chi - ngày xấu.";
-    if (this.NGU_HANH_KHAC[hanhChi] === hanhCan) return "Chi khắc Can - ngày hung.";
-    return "Can - Chi tương hòa - ngày bình ổn.";
-  }
+  // private danhGiaNguHanh(can: string, chi: string): string {
+  //   const hanhCan = this.NGU_HANH_CAN[can];
+  //   const hanhChi = this.NGU_HANH_CHI[chi];
+  //   if (this.NGU_HANH_SINH[hanhCan] === hanhChi) return "Can sinh Chi - ngày rất tốt (cát).";
+  //   if (this.NGU_HANH_SINH[hanhChi] === hanhCan) return "Chi sinh Can - ngày tốt.";
+  //   if (this.NGU_HANH_KHAC[hanhCan] === hanhChi) return "Can khắc Chi - ngày xấu.";
+  //   if (this.NGU_HANH_KHAC[hanhChi] === hanhCan) return "Chi khắc Can - ngày hung.";
+  //   return "Can - Chi tương hòa - ngày bình ổn.";
+  // }
 
   private sunLongitude(jdn: number): number {
     const T = (jdn - 2451545.0) / 36525.0;
@@ -921,47 +923,6 @@ export class DateDetailService {
     Dậu: "Tin vui đến. Cầu lộc đi hướng Nam rất tốt.",
     Tuất: "Cãi vã, thị phi, không nên làm việc quan trọng.",
     Hợi: "Rất tốt, kinh doanh thuận lợi, người đi xa sắp về.",
-  };
-
-  readonly NGU_HANH_CAN: Record<string, string> = {
-    Giáp: "Mộc",
-    Ất: "Mộc",
-    Bính: "Hỏa",
-    Đinh: "Hỏa",
-    Mậu: "Thổ",
-    Kỷ: "Thổ",
-    Canh: "Kim",
-    Tân: "Kim",
-    Nhâm: "Thủy",
-    Quý: "Thủy",
-  };
-  readonly NGU_HANH_CHI: Record<string, string> = {
-    Tý: "Thủy",
-    Sửu: "Thổ",
-    Dần: "Mộc",
-    Mão: "Mộc",
-    Thìn: "Thổ",
-    Tỵ: "Hỏa",
-    Ngọ: "Hỏa",
-    Mùi: "Thổ",
-    Thân: "Kim",
-    Dậu: "Kim",
-    Tuất: "Thổ",
-    Hợi: "Thủy",
-  };
-  readonly NGU_HANH_SINH: Record<string, string> = {
-    Mộc: "Hỏa",
-    Hỏa: "Thổ",
-    Thổ: "Kim",
-    Kim: "Thủy",
-    Thủy: "Mộc",
-  };
-  readonly NGU_HANH_KHAC: Record<string, string> = {
-    Mộc: "Thổ",
-    Thổ: "Thủy",
-    Thủy: "Hỏa",
-    Hỏa: "Kim",
-    Kim: "Mộc",
   };
 
   readonly NAP_AM: Record<string, string> = {
