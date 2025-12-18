@@ -7,7 +7,7 @@
         <input class="form-control" type="date" name="dateInput" [(ngModel)]="selectedDate" required />
       </div>
       <div class="col-sm-auto">
-        <button type="submit" class="btn btn-success">Xem ngày</button>
+        <button type="submit" class="btn btn-outline-primary">Xem ngày</button>
       </div>
       <!-- <div class="col text-end">
         <div class="btn-group" role="group">
@@ -31,7 +31,7 @@
   <table class="table table-bordered mb-0 align-middle">
     <thead class="table-light">
       <tr>
-        <th class="bg-success text-white text-center fw-bold" colspan="2">XEM NGÀY TỐT XẤU HÔM NAY</th>
+        <th class="bg-black text-white text-center fw-bold" colspan="2">XEM NGÀY TỐT XẤU HÔM NAY</th>
         <!-- <th class="bg-success text-white"></th> -->
       </tr>
     </thead>
@@ -39,22 +39,25 @@
       <tr>
         <td class="fw-bold">Thông tin cơ bản</td>
         <td>
-          <p><span class="badge bg-secondary">Dương lịch</span> {{result.solarDate}}</p>
-          <p><span class="badge bg-secondary">Âm lịch</span> {{result.lunarDate}}{{result.lunarLeap ? ' (Nhuận)' : ''}}
-            /
-            {{result.canChiNam}}</p>
-          <p><span class="badge bg-secondary">Can Chi ngày</span> {{result.canChiNgay}}</p>
-          <p><span class="badge bg-secondary">Can Chi tháng</span> {{result.canChiThang}}</p>
-          <p><span class="badge bg-secondary">Can Chi năm</span> {{result.canChiNam}}</p>
+          <p><strong>Dương lịch</strong> {{ result.solarDate }}</p>
+          <p>
+            <strong>Âm lịch</strong> {{ result.lunarDate
+            }}{{ result.lunarLeap ? " (Nhuận)" : "" }}
+            Năm
+            {{ result.canChiNam }}
+          </p>
+          <p><strong>Can Chi ngày</strong> {{ result.canChiNgay }}</p>
+          <p><strong>Can Chi tháng</strong> {{ result.canChiThang }}</p>
+          <p><strong>Can Chi năm</strong> {{ result.canChiNam }}</p>
           @if (result.ngayHoangDao.type === 'Hắc đạo') {
-            <p><span class="badge bg-secondary">Ngày hắc đạo</span> Sao {{ result.ngayHoangDao.sao }}</p>
+            <p><strong>Ngày hắc đạo</strong> Sao {{ result.ngayHoangDao.sao }}</p>
           }
           @if (result.ngayHoangDao.type === 'Hoàng đạo') {
-            <p><span class="badge bg-secondary">Ngày hoàng đạo</span> Sao {{ result.ngayHoangDao.sao }}</p>
+            <p><strong>Ngày hoàng đạo</strong> Sao {{ result.ngayHoangDao.sao }}</p>
           }
-          <p><span class="badge bg-secondary">Nạp âm</span> {{result.napAm}}</p>
-          <p><span class="badge bg-secondary">Đánh giá ngũ hành</span> {{result.nguHanhDanhGia}}</p>
-          <p><span class="badge bg-secondary">Tiết khí</span> {{result.tietKhi}}</p>
+          <p><strong>Nạp âm</strong> {{ result.napAm }}</p>
+          <p><strong>Đánh giá ngũ hành</strong> {{ result.nguHanhDanhGia }}</p>
+          <p><strong>Tiết khí</strong> {{ result.tietKhi }}</p>
         </td>
       </tr>
       <tr>

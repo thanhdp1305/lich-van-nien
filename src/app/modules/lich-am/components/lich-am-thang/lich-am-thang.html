@@ -42,11 +42,11 @@
 </div>
 
 <div class="table-responsive mt-3">
-  <table class="table calendar table-bordered mb-0 text-center align-middle border-success">
+  <table class="table calendar table-bordered mb-0 text-center align-middle">
     <thead class="table-light">
       <tr>
         <th
-          class="bg-success text-white text-center fw-bold"
+          class="bg-dark text-light text-center fw-bold"
           colspan="7"
         >
           LỊCH THÁNG {{selectedMonth}} NĂM {{selectedYear}}
@@ -54,13 +54,13 @@
         <!-- <th class="bg-success text-white"></th> -->
       </tr>
       <tr>
-        <th class="bg-success text-white">T2</th>
-        <th class="bg-success text-white">T3</th>
-        <th class="bg-success text-white">T4</th>
-        <th class="bg-success text-white">T5</th>
-        <th class="bg-success text-white">T6</th>
-        <th class="bg-success text-white">T7</th>
-        <th class="bg-success text-white">CN</th>
+        <th class="bg-dark text-light">T2</th>
+        <th class="bg-dark text-light">T3</th>
+        <th class="bg-dark text-light">T4</th>
+        <th class="bg-dark text-light">T5</th>
+        <th class="bg-dark text-light">T6</th>
+        <th class="bg-dark text-light">T7</th>
+        <th class="bg-dark text-light">CN</th>
       </tr>
     </thead>
     <tbody>
@@ -96,7 +96,7 @@
       </tr>
     </tbody>
   </table>
-  <div class="container-fluid bg-white border border-success">
+  <div class="container-fluid bg-white border border-secondary">
     <p><span class="day-dot dot-good mt-3"></span> Ngày hoàng đạo</p>
     <p><span class="day-dot dot-bad"></span> Ngày hắc đạo</p>
   </div>
@@ -108,7 +108,7 @@
     <thead class="table-light">
       <tr>
         <th
-          class="bg-success text-white text-center fw-bold"
+          class="bg-dark text-white text-center fw-bold"
           colspan="2"
         >
           THÔNG TIN NGÀY {{ detail.solarDate }}
@@ -120,25 +120,25 @@
       <tr>
         <td class="fw-bold">Thông tin cơ bản</td>
         <td>
-          <p><span class="badge bg-secondary">Dương lịch</span> {{ detail.solarDate }}</p>
+          <p><strong>Dương lịch</strong> {{ detail.solarDate }}</p>
           <p>
-            <span class="badge bg-secondary">Âm lịch</span> {{ detail.lunarDate
+            <strong>Âm lịch</strong> {{ detail.lunarDate
             }}{{ detail.lunarLeap ? " (Nhuận)" : "" }}
             Năm
             {{ detail.canChiNam }}
           </p>
-          <p><span class="badge bg-secondary">Can Chi ngày</span> {{ detail.canChiNgay }}</p>
-          <p><span class="badge bg-secondary">Can Chi tháng</span> {{ detail.canChiThang }}</p>
-          <p><span class="badge bg-secondary">Can Chi năm</span> {{ detail.canChiNam }}</p>
+          <p><strong>Can Chi ngày</strong> {{ detail.canChiNgay }}</p>
+          <p><strong>Can Chi tháng</strong> {{ detail.canChiThang }}</p>
+          <p><strong>Can Chi năm</strong> {{ detail.canChiNam }}</p>
           @if (detail.ngayHoangDao.type === 'Hắc đạo') {
-            <p><span class="badge bg-secondary">Ngày hắc đạo</span> Sao {{ detail.ngayHoangDao.sao }}</p>
+            <p><strong>Ngày hắc đạo</strong> Sao {{ detail.ngayHoangDao.sao }}</p>
           }
           @if (detail.ngayHoangDao.type === 'Hoàng đạo') {
-            <p><span class="badge bg-secondary">Ngày hoàng đạo</span> Sao {{ detail.ngayHoangDao.sao }}</p>
+            <p><strong>Ngày hoàng đạo</strong> Sao {{ detail.ngayHoangDao.sao }}</p>
           }
-          <p><span class="badge bg-secondary">Nạp âm</span> {{ detail.napAm }}</p>
-          <p><span class="badge bg-secondary">Đánh giá ngũ hành</span> {{ detail.nguHanhDanhGia }}</p>
-          <p><span class="badge bg-secondary">Tiết khí</span> {{ detail.tietKhi }}</p>
+          <p><strong>Nạp âm</strong> {{ detail.napAm }}</p>
+          <p><strong>Đánh giá ngũ hành</strong> {{ detail.nguHanhDanhGia }}</p>
+          <p><strong>Tiết khí</strong> {{ detail.tietKhi }}</p>
         </td>
       </tr>
       <tr>
