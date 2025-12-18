@@ -68,7 +68,7 @@
         <td
           *ngFor="let day of week"
           (click)="selectCell(day)"
-          [class.bg-success-subtle]="day.iso === selectedDateIso"
+          [class.bg-primary-subtle]="day.iso === selectedDateIso"
           [class.text-muted]="!day.inMonth"
           class="day-cell"
         >

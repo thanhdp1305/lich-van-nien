@@ -13,8 +13,12 @@
   cursor: pointer;
 }
 
+.bottom-nav .nav-link {
+  color: #858585;
+}
+
 .bottom-nav .nav-link.active {
-  // color: #0d6efd;
+  color: #000;
   background: none;
 }
 
