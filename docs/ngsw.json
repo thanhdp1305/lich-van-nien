@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1766052866739,
+  "timestamp": 1766052950290,
   "index": "/lich-van-nien/index.html",
   "assetGroups": [
     {
@@ -11,11 +11,11 @@
         "ignoreVary": true
       },
       "urls": [
-        "/lich-van-nien/chunk-S6IVLFYJ.js",
         "/lich-van-nien/chunk-UFDS4PK3.js",
+        "/lich-van-nien/chunk-ZA77PXKO.js",
         "/lich-van-nien/favicon.ico",
         "/lich-van-nien/index.html",
-        "/lich-van-nien/main-RADNVIBJ.js",
+        "/lich-van-nien/main-B2ZZOAAK.js",
         "/lich-van-nien/manifest.webmanifest",
         "/lich-van-nien/polyfills-UZDKQ4T6.js",
         "/lich-van-nien/scripts-TTWY4XDY.js",
@@ -45,8 +45,8 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/lich-van-nien/chunk-S6IVLFYJ.js": "4485b375a131f3cfceeff303e2c5246c1429d8ee",
     "/lich-van-nien/chunk-UFDS4PK3.js": "ec9283e8abd2ac5c4a844b9f2d023e0153f7158d",
+    "/lich-van-nien/chunk-ZA77PXKO.js": "042b16360bb9b7c4d402dc07d8e835496c397cad",
     "/lich-van-nien/favicon.ico": "9dcd158a6b548df649b971bbe52e855f82e6492b",
     "/lich-van-nien/icons/icon-128x128.png": "9954a6dc63658b4a1be0595456dee0dec122046e",
     "/lich-van-nien/icons/icon-144x144.png": "4d3a485b6987f6c567f96b34e5447ae0528d4f53",
@@ -56,8 +56,8 @@
     "/lich-van-nien/icons/icon-512x512.png": "ec6bd3f2023720c437e2f310e221a5b3e291af7f",
     "/lich-van-nien/icons/icon-72x72.png": "ab35fe5cb3b52e7580b7fc48de467a9942003785",
     "/lich-van-nien/icons/icon-96x96.png": "a53759b5ee787b092aa6d1890bf8117a360434c8",
-    "/lich-van-nien/index.html": "69269016c4751374bc1b813c437def5ac49dcda7",
-    "/lich-van-nien/main-RADNVIBJ.js": "5346d7e3b87272714c3fcfce9d46db8161ceb932",
+    "/lich-van-nien/index.html": "2d9dc432838f272b1cfda137dd524c7a47eceaeb",
+    "/lich-van-nien/main-B2ZZOAAK.js": "23edf5a983f2ff17e79e51d8d8485d472fffc2de",
     "/lich-van-nien/manifest.webmanifest": "b068c4cb6fb0ef94b2cc8cdb2474385b0003f667",
     "/lich-van-nien/polyfills-UZDKQ4T6.js": "38c9b370c0e9f9f932fe77ca39c98f09dc174b4d",
     "/lich-van-nien/scripts-TTWY4XDY.js": "59aa489af6324127a3d773836250da08639d4b26",
