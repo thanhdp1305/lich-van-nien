@@ -3,6 +3,7 @@ import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, NGU_HANH_CAN, NGU_HANH_CHI } from "..
 import { AmLich } from "./am-lich.service";
 import { CanChi } from "./can-chi.service";
 import { NguHanh } from "./ngu-hanh.service";
+import { HuongXuatHanh } from "./huong-xuat-hanh.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -40,8 +41,9 @@ export type DayDetail = {
   banhTo: { canStr: string; chiStr: string; lunarStr: string };
   ngocHapList: NgocHapItem[];
   huongList: { k: string; v: string }[];
+  hacThan: string;
   gioXuatHanhNotes: GioXuatHanhItem[];
-  textSummary: string;
+  textSummary?: string;
   tietKhi: any;
   ngayHoangDao: any;
   saoTot: string[]; // Thêm trường này
@@ -53,7 +55,8 @@ export class DateDetailService {
   constructor(
     private amLich: AmLich,
     private canChi: CanChi,
-    private nguHanh: NguHanh
+    private nguHanh: NguHanh,
+    private huongXuatHanh: HuongXuatHanh
   ) {}
 
 
@@ -82,29 +85,30 @@ export class DateDetailService {
     const truc = this.getTrucByJdn(jdn);
     const banhTo = this.buildBanhTo(canNgay, chiNgay, lunar.lunarDay);
     const ngocHapList = this.buildNgocHap(canNgay, chiNgay, lunar.lunarDay);
-    const huongList = Object.entries(this.HUONG_XUAT_HANH).map(([k, v]) => ({ k, v }));
+    const huongList = Object.entries(this.huongXuatHanh.getHuongXuatHanh(canNgay)).map(([x, y]) => ({ k: x, v: y }));
+    const hacThan = this.huongXuatHanh.getHuongHacThan(canChiNgay);
     const gioXuatHanhNotes = this.buildGioXuatHanhNotes();
     const tietKhi = this.getTietKhi(jdn);
     const [canThang, chiThang] = canChiThang.split(" ");
     const ngayHoangDao: any = this.getHoangDaoStatus(chiNgay, chiThang);
     const saoTotXau = this.getSaoTotSaoXau(canNgay, chiNgay, chiThang, truc, nhi, ngayHoangDao);
 
-    const textSummary = [
-      `Dương lịch: ${dd}/${mm}/${yy}`,
-      `Âm lịch: ${lunar.lunarDay}/${lunar.lunarMonth}${lunar.lunarLeap ? " (Nhuận)" : ""}/${lunar.lunarYear}`,
-      `Can-Chi ngày: ${canChiNgay}`,
-      `Can-Chi tháng: ${canChiThang}`,
-      `Can-Chi năm: ${canChiNam}`,
-      `Nạp âm: ${napAm || "—"}`,
-      `Ngũ hành đánh giá: ${nguHanhDG}`,
-      `Lục Diệu: ${lucDieuName} — ${lucDieuDesc}`,
-      `Giờ Hoàng Đạo: ${gioHD_text.join(", ") || "—"}`,
-      `Nhị thập bát tú: ${nhi.key} — ${nhi.data.sao || ""} (${nhi.data.loai})`,
-      `Trực: ${truc.key} — Nên: ${truc.data.tot} — Kiêng: ${truc.data.xau}`,
-      `Bành Tổ (CAN ngày): ${canNgay} — ${banhTo.canStr || "—"}`,
-      `Ngọc Hạp (tạm): ${ngocHapList.length ? ngocHapList.map((x) => x.k).join(", ") : "—"}`,
-      `Hướng xuất hành (tham khảo): ${huongList.map((h) => `${h.k}: ${h.v}`).join("; ")}`,
-    ].join("\n\n");
+    // const textSummary = [
+    //   `Dương lịch: ${dd}/${mm}/${yy}`,
+    //   `Âm lịch: ${lunar.lunarDay}/${lunar.lunarMonth}${lunar.lunarLeap ? " (Nhuận)" : ""}/${lunar.lunarYear}`,
+    //   `Can-Chi ngày: ${canChiNgay}`,
+    //   `Can-Chi tháng: ${canChiThang}`,
+    //   `Can-Chi năm: ${canChiNam}`,
+    //   `Nạp âm: ${napAm || "—"}`,
+    //   `Ngũ hành đánh giá: ${nguHanhDG}`,
+    //   `Lục Diệu: ${lucDieuName} — ${lucDieuDesc}`,
+    //   `Giờ Hoàng Đạo: ${gioHD_text.join(", ") || "—"}`,
+    //   `Nhị thập bát tú: ${nhi.key} — ${nhi.data.sao || ""} (${nhi.data.loai})`,
+    //   `Trực: ${truc.key} — Nên: ${truc.data.tot} — Kiêng: ${truc.data.xau}`,
+    //   `Bành Tổ (CAN ngày): ${canNgay} — ${banhTo.canStr || "—"}`,
+    //   `Ngọc Hạp (tạm): ${ngocHapList.length ? ngocHapList.map((x) => x.k).join(", ") : "—"}`,
+    //   `Hướng xuất hành (tham khảo): ${huongList.map((h) => `${h.k}: ${h.v}`).join("; ")}`,
+    // ].join("\n\n");
 
     return {
       solarDate: `${dd}/${mm}/${yy}`,
@@ -126,8 +130,9 @@ export class DateDetailService {
       banhTo,
       ngocHapList,
       huongList,
+      hacThan,
       gioXuatHanhNotes,
-      textSummary,
+      // textSummary,
       tietKhi,
       ngayHoangDao,
       saoTot: saoTotXau.saoTot, // TRẢ VỀ KẾT QUẢ
@@ -903,13 +908,6 @@ export class DateDetailService {
     },
   };
 
-  readonly HUONG_XUAT_HANH: Record<string, string> = {
-    HyThan: "Chính Nam",
-    TaiThan: "Chính Tây",
-    KyThan: "Đông Bắc",
-    GiaiThan: "Đông Nam",
-    PhucThan: "Bắc",
-  };
   readonly GIO_XUAT_HANH_LY_THUAN_PHONG: Record<string, string> = {
     Tý: "Cầu tài không lợi, hay gặp chuyện trái ý. Dễ gặp nạn. Nếu làm việc quan trọng phải cúng tế.",
     Sửu: "Mọi việc tốt lành, cầu tài được. Xuất hành hướng Tây Nam càng tốt.",
