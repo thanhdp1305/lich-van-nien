@@ -41,9 +41,26 @@ app-bottom-nav {
 
 .card {
   border: 0;
+  box-shadow: 0 0 0 1px rgba(23, 23, 23, 0.033);
 }
 
 .badge {
   padding: 8px 8px;
   border-radius: 100px;
+}
+
+@media only screen and (max-width: 480px) {
+  table.table {
+    line-height: 14px;
+    font-size: 11px;
+    padding: 6px;
+  }
+
+  table td.day-cell * {
+    font-size: 8px;
+  }
+
+  table td.day-cell .day {
+    font-size: 11px;
+  }
 }

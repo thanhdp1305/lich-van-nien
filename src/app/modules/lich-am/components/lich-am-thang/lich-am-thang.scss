@@ -61,17 +61,7 @@ table td.day-cell .day-dot {
 }
 
 @media only screen and (max-width: 480px) {
-  table.table {
-    line-height: 14px;
-    font-size: 11px;
-    padding: 6px;
-  }
-
-  table td.day-cell * {
-    font-size: 8px;
-  }
-
   table td.day-cell .day {
-    font-size: 11px;
+    font-size: 1rem;
   }
 }
