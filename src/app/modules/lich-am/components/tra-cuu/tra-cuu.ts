@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DateDetailService, DayDetail } from '../../services/date-detail.service';
-import { CalendarService, DayCell } from '../../services/calendar.service';
+import { Sao } from '../../services/sao.service';
 
 @Component({
   selector: 'app-tra-cuu',
@@ -15,7 +15,7 @@ export class TraCuu implements OnInit {
 
   constructor(
     private dateDetailService: DateDetailService,
-    private calenderService: CalendarService
+    private sao: Sao
   ) {}
 
   ngOnInit(): void {
@@ -35,11 +35,11 @@ export class TraCuu implements OnInit {
   }
 
   get saoTotTieuBieu(): string[] {
-    return this.dateDetailService.saoTotTieuBieu;
+    return this.sao.saoTotTieuBieu;
   }
 
   get saoXauTieuBieu(): string[] {
-    return this.dateDetailService.saoXauTieuBieu;
+    return this.sao.saoXauTieuBieu;
   }
 
   get NGAY_KY() {
