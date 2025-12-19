@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, KHUNG_GIO, NGU_HANH_CAN, NGU_HANH_CHI } from "../data";
+import { KHUNG_GIO, NGU_HANH_CAN, NGU_HANH_CHI } from "../data";
 import { AmLich } from "./am-lich.service";
 import { CanChi } from "./can-chi.service";
 import { NguHanh } from "./ngu-hanh.service";
@@ -9,20 +9,13 @@ import { NapAm } from "./nap-am.service";
 import { LucDieu } from "./luc-dieu.service";
 import { GioXuatHanh, GioXuatHanhItem } from "./gio-xuat-hanh.service";
 import { TietKhi } from "./tiet-khi.service";
+import { NgayHoangDao } from "./ngay-hoang-dao.service";
+import { XungHop, XungHopValue } from "./xung-hop.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type NhiThapBatTuItem = {
   key: string;
   data: { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string };
-};
-export type XungHopValue = {
-  lucHop?: string;
-  tamHop?: string[];
-  xung?: string;
-  hinh?: string;
-  hai?: string;
-  pha?: string;
-  tuyet?: string;
 };
 export type DayDetail = {
   solarDate: string;
@@ -65,6 +58,8 @@ export class DateDetailService {
     private lucDieu: LucDieu,
     private gioXuatHanh: GioXuatHanh,
     private tietKhi: TietKhi,
+    private ngayHoangDao: NgayHoangDao,
+    private xungHop: XungHop
   ) {}
 
 
@@ -84,7 +79,7 @@ export class DateDetailService {
     const canChiThang = this.canChi.getCanChiThang(canNamIndex, lunar.lunarMonth);
     const napAm = this.napAm.getNapAmSafe(canNgay, chiNgay);
     const nguHanhDG = this.nguHanh.danhGiaNguHanh(canNgay, chiNgay);
-    const xh = this.getXungHopValue(chiNgay);
+    const xh = this.xungHop.getXungHopValue(chiNgay);
     const lucDieuName = this.lucDieu.LUC_DIEU_THEO_CHI[chiNgay];
     const lucDieuDesc = this.lucDieu.LUC_DIEU[lucDieuName] || "";
     const gioHD_chis = this.GIO_HOANG_DAO[chiNgay] || [];
@@ -98,7 +93,7 @@ export class DateDetailService {
     const gioXuatHanhNotes = this.gioXuatHanh.buildGioXuatHanhNotes();
     const tietKhi = this.tietKhi.getTietKhi(jdn);
     const [canThang, chiThang] = canChiThang.split(" ");
-    const ngayHoangDao: any = this.getHoangDaoStatus(chiNgay, chiThang);
+    const ngayHoangDao: any = this.ngayHoangDao.getHoangDaoStatus(chiNgay, chiThang);
     const saoTotXau = this.getSaoTotSaoXau(canNgay, chiNgay, chiThang, truc, nhi, ngayHoangDao);
 
     // const textSummary = [
@@ -218,18 +213,6 @@ export class DateDetailService {
   //   return `${can} ${chi}`;
   // }
 
-  private getXungHopValue(chi: string): XungHopValue {
-    return {
-      lucHop: this.LUC_HOP[chi],
-      tamHop: this.TAM_HOP[chi],
-      xung: this.XUNG[chi],
-      hinh: this.HAI[chi],
-      hai: this.HAI[chi],
-      pha: this.PHA[chi],
-      tuyet: this.TUYET[chi],
-    };
-  }
-
   // private danhGiaNguHanh(can: string, chi: string): string {
   //   const hanhCan = this.NGU_HANH_CAN[can];
   //   const hanhChi = this.NGU_HANH_CHI[chi];
@@ -262,40 +245,6 @@ export class DateDetailService {
         key, 
         data: this.NHI_THAP_BAT_TU[key] 
     };
-  }
-
-  private getSaoHoangDao(index: number) {
-    return DS_SAO_HOANG_DAO[index] || null;
-  }
-
-  private getSaoHacDao(index: number) {
-    return DS_SAO_HAC_DAO[index] || null;
-  }
-
-  private getHoangDaoStatus(chiNgay: string, chiThang: string) {
-    // const hoangDaoList = this.NGAY_HOANG_DAO[chiThang];
-
-    const chiThangIndex = this.CHI_TO_INDEX[chiThang];
-    const isHoangDao = this.NGAY_HOANG_DAO_THANG[chiThangIndex].includes(chiNgay);
-    const isHacDao = this.NGAY_HAC_DAO_THANG[chiThangIndex].includes(chiNgay);
-
-    if (isHoangDao) {
-      const saoHDidx = this.NGAY_HOANG_DAO_THANG[chiThangIndex].indexOf(chiNgay);
-      return {
-        type: 'Hoàng đạo',
-        good: true,
-        sao: this.getSaoHoangDao(saoHDidx), // ví dụ Kim Quỹ, Thanh Long…
-      };
-    } else if (isHacDao) {
-      const saoHDidx = this.NGAY_HAC_DAO_THANG[chiThangIndex].indexOf(chiNgay);
-      return {
-        type: 'Hắc đạo',
-        good: false,
-        sao: this.getSaoHacDao(saoHDidx), // ví dụ Bạch Hổ, Chu Tước…
-      };
-    } else {
-      return null;
-    }
   }
 
   /**
@@ -381,38 +330,6 @@ export class DateDetailService {
   }
 
   // ----------------- MARK: Dữ liệu -----------------
-  // NGAY_HOANG_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
-  readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
-    1: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Tuất'], // Dần
-    2: ['Dần', 'Mão', 'Ngọ', 'Mùi', 'Dậu', 'Tý'], // Mão
-    3: ['Thìn', 'Tỵ', 'Thân', 'Dậu', 'Hợi', 'Dần'], // Thìn
-    4: ['Ngọ', 'Mùi', 'Tuất', 'Hợi', 'Sửu', 'Thìn'], // Tỵ
-    5: ['Thân', 'Dậu', 'Tý', 'Sửu', 'Mão', 'Ngọ'], // Ngọ
-    6: ['Tuất', 'Hợi', 'Dần', 'Mão', 'Tỵ', 'Thân'], // Mùi
-    7: ['Tý', 'Sửu', 'Thìn', 'Tỵ', 'Mùi', 'Tuất'], // Thân
-    8: ['Dần', 'Mão', 'Ngọ', 'Mùi', 'Dậu', 'Tý'], // Dậu
-    9: ['Thìn', 'Tỵ', 'Thân', 'Dậu', 'Hợi', 'Dần'], // Tuất
-    10: ['Ngọ', 'Mùi', 'Tuất', 'Hợi', 'Sửu', 'Thìn'], // Hợi (Tháng 10 Âm lịch)
-    11: ['Thân', 'Dậu', 'Tý', 'Sửu', 'Mão', 'Ngọ'], // Tý (Tháng 11 Âm lịch)
-    12: ['Tuất', 'Hợi', 'Dần', 'Mão', 'Tỵ', 'Thân'], // Sửu (Tháng 12 Âm lịch)
-  };
-
-  // // NGAY_HAC_DAO_THANG: Key là số thứ tự Chi Tháng (1=Dần, 10=Hợi, 11=Tý, 12=Sửu)
-  readonly NGAY_HAC_DAO_THANG: Record<number, string[]> = {
-    1: ['Dần', 'Mão', 'Ngọ', 'Thân', 'Dậu', 'Hợi'], // Dần
-    2: ['Thìn', 'Tỵ', 'Thân', 'Tuất', 'Hợi', 'Sửu'], // Mão
-    3: ['Ngọ', 'Mùi', 'Tuất', 'Tý', 'Sửu', 'Mão'], // Thìn
-    4: ['Thân', 'Dậu', 'Tý', 'Dần', 'Mão', 'Tỵ'], // Tỵ
-    5: ['Tuất', 'Hợi', 'Dần', 'Thìn', 'Tỵ', 'Mùi'], // Ngọ
-    6: ['Tý', 'Sửu', 'Thìn', 'Ngọ', 'Mùi', 'Dậu'], // Mùi
-    7: ['Dần', 'Mão', 'Ngọ', 'Thân', 'Dậu', 'Hợi'], // Thân
-    8: ['Thìn', 'Tỵ', 'Thân', 'Tuất', 'Hợi', 'Sửu'], // Dậu
-    9: ['Ngọ', 'Mùi', 'Tuất', 'Tý', 'Sửu', 'Mão'], // Tuất
-    10: ['Thân', 'Dậu', 'Tý', 'Dần', 'Mão', 'Tỵ'], // Hợi (Tháng 10 Âm lịch)
-    11: ['Tuất', 'Hợi', 'Dần', 'Thìn', 'Tỵ', 'Mùi'], // Tý
-    12: ['Tý', 'Sửu', 'Thìn', 'Ngọ', 'Mùi', 'Dậu'], // Sửu
-  };
-
   // Bản rút gọn
   // readonly NGAY_HOANG_DAO_THANG: Record<number, string[]> = {
   //   1: ["Tý", "Sửu", "Tỵ", "Mùi"], // Dần
@@ -445,20 +362,7 @@ export class DateDetailService {
   // };
 
   // Ví dụ về cách chuyển đổi từ Chi sang Index (Giả định: Dần=1, Mão=2,...)
-  readonly CHI_TO_INDEX: Record<string, number> = {
-    Dần: 1,
-    Mão: 2,
-    Thìn: 3,
-    Tỵ: 4,
-    Ngọ: 5,
-    Mùi: 6,
-    Thân: 7,
-    Dậu: 8,
-    Tuất: 9,
-    Hợi: 10,
-    Tý: 11,
-    Sửu: 12,
-  };
+
 
   readonly GIO_HOANG_DAO: Record<string, string[]> = {
     Tý: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],
@@ -485,91 +389,6 @@ export class DateDetailService {
 
   readonly TRUNG_TANG = ["Nhâm Thân", "Giáp Thân", "Canh Thân", "Mậu Thân"];
   readonly TRUNG_PHUC = ["Quý Dậu", "Ất Dậu", "Tân Dậu", "Kỷ Dậu"];
-
-  readonly LUC_HOP: Record<string, string> = {
-    Tý: "Sửu",
-    Sửu: "Tý",
-    Dần: "Hợi",
-    Mão: "Tuất",
-    Thìn: "Dậu",
-    Tỵ: "Thân",
-    Ngọ: "Mùi",
-    Mùi: "Ngọ",
-    Thân: "Tỵ",
-    Dậu: "Thìn",
-    Tuất: "Mão",
-    Hợi: "Dần",
-  };
-  readonly TAM_HOP: Record<string, string[]> = {
-    Tý: ["Thìn", "Thân"],
-    Sửu: ["Tỵ", "Dậu"],
-    Dần: ["Ngọ", "Tuất"],
-    Mão: ["Mùi", "Hợi"],
-    Thìn: ["Tý", "Thân"],
-    Tỵ: ["Sửu", "Dậu"],
-    Ngọ: ["Dần", "Tuất"],
-    Mùi: ["Mão", "Hợi"],
-    Thân: ["Tý", "Thìn"],
-    Dậu: ["Sửu", "Tỵ"],
-    Tuất: ["Dần", "Ngọ"],
-    Hợi: ["Mão", "Mùi"],
-  };
-  readonly XUNG: Record<string, string> = {
-    Tý: "Ngọ",
-    Sửu: "Mùi",
-    Dần: "Thân",
-    Mão: "Dậu",
-    Thìn: "Tuất",
-    Tỵ: "Hợi",
-    Ngọ: "Tý",
-    Mùi: "Sửu",
-    Thân: "Dần",
-    Dậu: "Mão",
-    Tuất: "Thìn",
-    Hợi: "Tỵ",
-  };
-  readonly HAI: Record<string, string> = {
-    Tý: "Mùi",
-    Sửu: "Ngọ",
-    Dần: "Tỵ",
-    Mão: "Thìn",
-    Thìn: "Mão",
-    Tỵ: "Dần",
-    Ngọ: "Sửu",
-    Mùi: "Tý",
-    Thân: "Hợi",
-    Dậu: "Tuật",
-    Tuất: "Dậu",
-    Hợi: "Thân",
-  };
-  readonly PHA: Record<string, string> = {
-    Tý: "Dậu",
-    Sửu: "Tuất",
-    Dần: "Hợi",
-    Mão: "Ngọ",
-    Thìn: "Sửu",
-    Tỵ: "Thân",
-    Ngọ: "Mão",
-    Mùi: "Thìn",
-    Thân: "Tỵ",
-    Dậu: "Tý",
-    Tuất: "Sửu",
-    Hợi: "Dần",
-  };
-  readonly TUYET: Record<string, string> = {
-    Tý: "Tỵ",
-    Sửu: "Ngọ",
-    Dần: "Mùi",
-    Mão: "Thân",
-    Thìn: "Dậu",
-    Tỵ: "Tuất",
-    Ngọ: "Hợi",
-    Mùi: "Tý",
-    Thân: "Sửu",
-    Dậu: "Dần",
-    Tuất: "Mão",
-    Hợi: "Thìn",
-  };
 
   readonly BANH_TO: Record<string, string> = {
     Giáp: "“Giáp nhật bất khả thủ hành, xuất hành đa phong ba” - Không nên xuất hành tránh sóng gió.",
