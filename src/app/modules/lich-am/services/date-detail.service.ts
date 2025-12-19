@@ -4,6 +4,7 @@ import { AmLich } from "./am-lich.service";
 import { CanChi } from "./can-chi.service";
 import { NguHanh } from "./ngu-hanh.service";
 import { HuongXuatHanh } from "./huong-xuat-hanh.service";
+import { Truc, TrucItem } from "./truc.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -11,7 +12,6 @@ export type NhiThapBatTuItem = {
   key: string;
   data: { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string };
 };
-export type TrucItem = { key: string; data: { moTa: string, tot: string; xau: string } };
 export type XungHopValue = {
   lucHop?: string;
   tamHop?: string[];
@@ -56,7 +56,8 @@ export class DateDetailService {
     private amLich: AmLich,
     private canChi: CanChi,
     private nguHanh: NguHanh,
-    private huongXuatHanh: HuongXuatHanh
+    private huongXuatHanh: HuongXuatHanh,
+    private truc: Truc
   ) {}
 
 
@@ -82,7 +83,7 @@ export class DateDetailService {
     const gioHD_chis = this.GIO_HOANG_DAO[chiNgay] || [];
     const gioHD_text = gioHD_chis.map((c) => `${c} (${this.KHUNG_GIO[c] || ""})`);
     const nhi = this.getNhiThapBatTu(jdn);
-    const truc = this.getTrucByJdn(jdn);
+    const truc = this.truc.getTrucByJdn(jdn);
     const banhTo = this.buildBanhTo(canNgay, chiNgay, lunar.lunarDay);
     const ngocHapList = this.buildNgocHap(canNgay, chiNgay, lunar.lunarDay);
     const huongList = Object.entries(this.huongXuatHanh.getHuongXuatHanh(canNgay)).map(([x, y]) => ({ k: x, v: y }));
@@ -275,12 +276,6 @@ export class DateDetailService {
         key, 
         data: this.NHI_THAP_BAT_TU[key] 
     };
-  }
-
-  private getTrucByJdn(jdn: number): TrucItem {
-    const idx = (((jdn + this.TRUC_OFFSET) % 12) + 12) % 12;
-    const key = this.TRUC_ORDER[idx];
-    return { key, data: this.TRUC[key] };
   }
 
   // Lấy thông tin tiết khí
@@ -844,70 +839,6 @@ export class DateDetailService {
     Chẩn: { sao: "Chẩn Thổ Trĩ", loai: "Tốt", moTa: "Tướng tinh con gà.", nen: "Tốt cho mọi việc.", ky: "Kỵ mai táng.", ngoaiLe: "" },
   };
 
-  readonly TRUC_ORDER = ["Kiến", "Trừ", "Mãn", "Bình", "Định", "Chấp", "Phá", "Nguy", "Thành", "Thu", "Khai", "Bế"];
-  readonly TRUC: Record<string, { moTa: string; tot: string; xau: string }> = {
-    Kiến: {
-      moTa: "KIẾN nghi xuất hành, bất khả khai thương - Ngày Trực KIẾN nên du lịch, không được khai trương",
-      tot: "Khai trương, nhậm chức, cưới hỏi, trồng cây, xuất hành tốt.",
-      xau: "Kỵ động thổ, chôn cất, đào giếng, lợp nhà.",
-    },
-    Trừ: {
-      moTa: "TRỪ khả phục dược, châm cứu diệc lương - Ngày Trực TRỪ nên dùng thuốc, châm cứu cũng hay",
-      tot: "Tốt cho phá dỡ, bỏ cái cũ để làm cái mới.",
-      xau: "Kỵ cưới hỏi và xây dựng.",
-    },
-    Mãn: {
-      moTa: "MÃN khả tứ thị, phục dược tao ương - Ngày Trực MÃN dạo phố phường, uống thuốc thì khổ",
-      tot: "Tốt cho cưới hỏi, cầu tài, cầu phúc.",
-      xau: "Kỵ kiện tụng.",
-    },
-    Bình: {
-      moTa: "BÌNH khả đồ nê, an ky cát xương - Ngày Trực BÌNH hợp mầu đen, đi bằng phương tiện",
-      tot: "Tốt cho việc nhỏ, bình ổn.",
-      xau: "Kỵ việc lớn.",
-    },
-    Định: {
-      moTa: "ĐỊNH thả tiến súc, nhập học danh dương - Ngày Trực  ĐỊNH mua gia súc, nhập trường nổi danh",
-      tot: "Tốt cho cưới hỏi, cầu tài.",
-      xau: "Kỵ kiện tụng, động thổ.",
-    },
-    Chấp: {
-      moTa: "CHẤP khả bộ tróc, đạo tặc nan tàng - Ngày Trực CHẤP bắt kẻ gian, trộm khó che giấu",
-      tot: "Tốt cho xây cất, cầu phúc.",
-      xau: "Kỵ xuất hành.",
-    },
-    Phá: {
-      moTa: "PHÁ nghi trì bệnh, tất chủ an khang -  Ngày Trực PHÁ nên trị bệnh, chủ sẽ mạnh khỏe",
-      tot: "Tốt cho phá bỏ, dỡ nhà.",
-      xau: "Xấu cho mọi việc lớn.",
-    },
-    Nguy: {
-      moTa: "NGUY khả bộ ngư, bất lợi hành thuyền - Ngày Trực NGUY nên bắt cá, chẳng nên đi thuyền",
-      tot: "Không có việc tốt rõ ràng.",
-      xau: "Rất xấu, đại kỵ cưới hỏi.",
-    },
-    Thành: {
-      moTa: "THÀNH khả nhập học, tranh tụng bất cường - Ngày Trực THÀNH nên ghi danh, tránh xa kiện tụng",
-      tot: "Cầu tài, cưới hỏi, xây cất, khai trương.",
-      xau: "Kỵ kiện tụng.",
-    },
-    Thu: {
-      moTa: "THU nghi nạp tài, tức kị an táng - Ngày Trực THU nên nhập tiền, cần tránh an táng",
-      tot: "Thu hoạch, nhập kho.",
-      xau: "Kỵ xuất tiền.",
-    },
-    Khai: {
-      moTa: "KHAI khả cầu trì, châm cứu bất tường - Ngày Trực KHAI mở cửa quan, chẳng nên châm cứu",
-      tot: "Khai trương, mở hàng, xuất hành.",
-      xau: "Kỵ an táng.",
-    },
-    Bế: {
-      moTa: "BẾ đạm thụ tạo, chỉ hứa an khang - Ngày Trực BẾ không xây mới, chỉ lập kế hoạch",
-      tot: "Không có việc tốt.",
-      xau: "Đại hung, tránh mọi việc quan trọng.",
-    },
-  };
-
   readonly GIO_XUAT_HANH_LY_THUAN_PHONG: Record<string, string> = {
     Tý: "Cầu tài không lợi, hay gặp chuyện trái ý. Dễ gặp nạn. Nếu làm việc quan trọng phải cúng tế.",
     Sửu: "Mọi việc tốt lành, cầu tài được. Xuất hành hướng Tây Nam càng tốt.",
@@ -1168,7 +1099,6 @@ export class DateDetailService {
   ];
 
   readonly OFFSET_28_TU = -90;
-  readonly TRUC_OFFSET = 1;
 }
 
 export function mod(n: number, m: number): number {
