@@ -5,6 +5,7 @@ import { CanChi } from "./can-chi.service";
 import { NguHanh } from "./ngu-hanh.service";
 import { HuongXuatHanh } from "./huong-xuat-hanh.service";
 import { Truc, TrucItem } from "./truc.service";
+import { NapAm } from "./nap-am.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -57,7 +58,8 @@ export class DateDetailService {
     private canChi: CanChi,
     private nguHanh: NguHanh,
     private huongXuatHanh: HuongXuatHanh,
-    private truc: Truc
+    private truc: Truc,
+    private napAm: NapAm,
   ) {}
 
 
@@ -75,7 +77,7 @@ export class DateDetailService {
     const canChiNam = this.canChi.getCanChiNam(lunar.lunarYear);
     const canNamIndex = (lunar.lunarYear + 6) % 10;
     const canChiThang = this.canChi.getCanChiThang(canNamIndex, lunar.lunarMonth);
-    const napAm = this.getNapAmSafe(canNgay, chiNgay);
+    const napAm = this.napAm.getNapAmSafe(canNgay, chiNgay);
     const nguHanhDG = this.nguHanh.danhGiaNguHanh(canNgay, chiNgay);
     const xh = this.getXungHopValue(chiNgay);
     const lucDieuName = this.LUC_DIEU_THEO_CHI[chiNgay];
@@ -218,10 +220,6 @@ export class DateDetailService {
   //   const chi = this.CHI[(nam + 8) % 12];
   //   return `${can} ${chi}`;
   // }
-
-  private getNapAmSafe(can: string, chi: string): string {
-    return this.NAP_AM[`${can} ${chi}`] || "";
-  }
 
   private getXungHopValue(chi: string): XungHopValue {
     return {
@@ -852,69 +850,6 @@ export class DateDetailService {
     Dậu: "Tin vui đến. Cầu lộc đi hướng Nam rất tốt.",
     Tuất: "Cãi vã, thị phi, không nên làm việc quan trọng.",
     Hợi: "Rất tốt, kinh doanh thuận lợi, người đi xa sắp về.",
-  };
-
-  readonly NAP_AM: Record<string, string> = {
-    "Giáp Tý": "Hải Trung Kim",
-    "Ất Sửu": "Hải Trung Kim",
-    "Bính Dần": "Lư Trung Hỏa",
-    "Đinh Mão": "Lư Trung Hỏa",
-    "Mậu Thìn": "Đại Lâm Mộc",
-    "Kỷ Tỵ": "Đại Lâm Mộc",
-    "Canh Ngọ": "Lộ Bàng Thổ",
-    "Tân Mùi": "Lộ Bàng Thổ",
-    "Nhâm Thân": "Kiếm Phong Kim",
-    "Quý Dậu": "Kiếm Phong Kim",
-    "Giáp Tuất": "Sơn Đầu Hỏa",
-    "Ất Hợi": "Sơn Đầu Hỏa",
-    "Bính Tý": "Giản Hạ Thủy",
-    "Đinh Sửu": "Giản Hạ Thủy",
-    "Mậu Dần": "Thành Đầu Thổ",
-    "Kỷ Mão": "Thành Đầu Thổ",
-    "Canh Thìn": "Bạch Lạp Kim",
-    "Tân Tỵ": "Bạch Lạp Kim",
-    "Nhâm Ngọ": "Dương Liễu Mộc",
-    "Quý Mùi": "Dương Liễu Mộc",
-    "Giáp Thân": "Tuyền Trung Thủy",
-    "Ất Dậu": "Tuyền Trung Thủy",
-    "Bính Tuất": "Ốc Thượng Thổ",
-    "Đinh Hợi": "Ốc Thượng Thổ",
-    "Mậu Tý": "Tích Lịch Hỏa",
-    "Kỷ Sửu": "Tích Lịch Hỏa",
-    "Canh Dần": "Tùng Bách Mộc",
-    "Tân Mão": "Tùng Bách Mộc",
-    "Nhâm Thìn": "Trường Lưu Thủy",
-    "Quý Tỵ": "Trường Lưu Thủy",
-    "Giáp Ngọ": "Sa Trung Kim",
-    "Ất Mùi": "Sa Trung Kim",
-    "Bính Thân": "Sơn Hạ Hỏa",
-    "Đinh Dậu": "Sơn Hạ Hỏa",
-    "Mậu Tuất": "Bình Địa Mộc",
-    "Kỷ Hợi": "Bình Địa Mộc",
-    "Canh Tý": "Bích Thượng Thổ",
-    "Tân Sửu": "Bích Thượng Thổ",
-    "Nhâm Dần": "Kim Bạch Kim",
-    "Quý Mão": "Kim Bạch Kim",
-    "Giáp Thìn": "Phúc Đăng Hỏa",
-    "Ất Tỵ": "Phúc Đăng Hỏa",
-    "Bính Ngọ": "Thiên Hà Thủy",
-    "Đinh Mùi": "Thiên Hà Thủy",
-    "Mậu Thân": "Đại Trạch Thổ",
-    "Kỷ Dậu": "Đại Trạch Thổ",
-    "Canh Tuất": "Thoa Xuyến Kim",
-    "Tân Hợi": "Thoa Xuyến Kim",
-    "Nhâm Tý": "Tang Đố Mộc",
-    "Quý Sửu": "Tang Đố Mộc",
-    "Giáp Dần": "Đại Khê Thủy",
-    "Ất Mão": "Đại Khê Thủy",
-    "Bính Thìn": "Sa Trung Thổ",
-    "Đinh Tỵ": "Sa Trung Thổ",
-    "Mậu Ngọ": "Thiên Thượng Hỏa",
-    "Kỷ Mùi": "Thiên Thượng Hỏa",
-    "Canh Thân": "Thạch Lựu Mộc",
-    "Tân Dậu": "Thạch Lựu Mộc",
-    "Nhâm Tuất": "Đại Hải Thủy",
-    "Quý Hợi": "Đại Hải Thủy",
   };
 
   readonly NGOC_HAP_SAO_TOT_FULL: Record<string, string> = {
