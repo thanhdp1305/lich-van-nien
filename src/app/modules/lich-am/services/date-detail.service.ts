@@ -6,6 +6,7 @@ import { NguHanh } from "./ngu-hanh.service";
 import { HuongXuatHanh } from "./huong-xuat-hanh.service";
 import { Truc, TrucItem } from "./truc.service";
 import { NapAm } from "./nap-am.service";
+import { LucDieu } from "./luc-dieu.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type GioXuatHanhItem = { chi: string; range: string; note: string };
@@ -60,6 +61,7 @@ export class DateDetailService {
     private huongXuatHanh: HuongXuatHanh,
     private truc: Truc,
     private napAm: NapAm,
+    private lucDieu: LucDieu,
   ) {}
 
 
@@ -80,8 +82,8 @@ export class DateDetailService {
     const napAm = this.napAm.getNapAmSafe(canNgay, chiNgay);
     const nguHanhDG = this.nguHanh.danhGiaNguHanh(canNgay, chiNgay);
     const xh = this.getXungHopValue(chiNgay);
-    const lucDieuName = this.LUC_DIEU_THEO_CHI[chiNgay];
-    const lucDieuDesc = this.LUC_DIEU[lucDieuName] || "";
+    const lucDieuName = this.lucDieu.LUC_DIEU_THEO_CHI[chiNgay];
+    const lucDieuDesc = this.lucDieu.LUC_DIEU[lucDieuName] || "";
     const gioHD_chis = this.GIO_HOANG_DAO[chiNgay] || [];
     const gioHD_text = gioHD_chis.map((c) => `${c} (${this.KHUNG_GIO[c] || ""})`);
     const nhi = this.getNhiThapBatTu(jdn);
@@ -568,30 +570,6 @@ export class DateDetailService {
     Dậu: "17:00 - 18:59",
     Tuất: "19:00 - 20:59",
     Hợi: "21:00 - 22:59",
-  };
-
-  readonly LUC_DIEU: Record<string, string> = {
-    "Đại An": "Tốt. Mọi việc đều hanh thông, đi lại thuận lợi, cầu tài lộc tốt.",
-    "Lưu Niên": "Xấu. Dễ gặp rủi ro, hao tài, thị phi.",
-    "Tốc Hỷ": "Rất tốt. Có tin vui, cưới hỏi, khai trương đều đẹp.",
-    "Xích Khẩu": "Xấu về kiện tụng, thị phi, tranh cãi.",
-    "Tiểu Cát": "Rất đẹp. Mọi sự may mắn, tài lộc.",
-    "Không Vong": "Hung. Việc khó thành, gặp trở ngại, tiền tài dễ mất.",
-  };
-
-  readonly LUC_DIEU_THEO_CHI: Record<string, string> = {
-    Tý: "Đại An",
-    Sửu: "Lưu Niên",
-    Dần: "Tốc Hỷ",
-    Mão: "Xích Khẩu",
-    Thìn: "Tiểu Cát",
-    Tỵ: "Không Vong",
-    Ngọ: "Đại An",
-    Mùi: "Lưu Niên",
-    Thân: "Tốc Hỷ",
-    Dậu: "Xích Khẩu",
-    Tuất: "Tiểu Cát",
-    Hợi: "Không Vong",
   };
 
   readonly NGAY_KY = {
