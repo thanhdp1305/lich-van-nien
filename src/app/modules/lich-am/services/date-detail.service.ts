@@ -8,6 +8,7 @@ import { Truc, TrucItem } from "./truc.service";
 import { NapAm } from "./nap-am.service";
 import { LucDieu } from "./luc-dieu.service";
 import { GioXuatHanh, GioXuatHanhItem } from "./gio-xuat-hanh.service";
+import { TietKhi } from "./tiet-khi.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
 export type NhiThapBatTuItem = {
@@ -63,6 +64,7 @@ export class DateDetailService {
     private napAm: NapAm,
     private lucDieu: LucDieu,
     private gioXuatHanh: GioXuatHanh,
+    private tietKhi: TietKhi,
   ) {}
 
 
@@ -94,7 +96,7 @@ export class DateDetailService {
     const huongList = Object.entries(this.huongXuatHanh.getHuongXuatHanh(canNgay)).map(([x, y]) => ({ k: x, v: y }));
     const hacThan = this.huongXuatHanh.getHuongHacThan(canChiNgay);
     const gioXuatHanhNotes = this.gioXuatHanh.buildGioXuatHanhNotes();
-    const tietKhi = this.getTietKhi(jdn);
+    const tietKhi = this.tietKhi.getTietKhi(jdn);
     const [canThang, chiThang] = canChiThang.split(" ");
     const ngayHoangDao: any = this.getHoangDaoStatus(chiNgay, chiThang);
     const saoTotXau = this.getSaoTotSaoXau(canNgay, chiNgay, chiThang, truc, nhi, ngayHoangDao);
@@ -238,15 +240,6 @@ export class DateDetailService {
   //   return "Can - Chi tương hòa - ngày bình ổn.";
   // }
 
-  private sunLongitude(jdn: number): number {
-    const T = (jdn - 2451545.0) / 36525.0;
-    const M = 357.5291 + 35999.0503 * T;
-    const L0 = 280.46645 + 36000.76983 * T;
-    const DL = (1.9146 - 0.004817 * T) * Math.sin((M * Math.PI) / 180) + 0.019993 * Math.sin((2 * M * Math.PI) / 180);
-    const L = L0 + DL;
-    return ((L % 360) + 360) % 360;
-  }
-
   // private getNhiThapBatTu(jdn: number): NhiThapBatTuItem {
   //   const lon = this.sunLongitude(jdn);
   //   const adj = (lon - this.OFFSET_28_TU + 360) % 360;
@@ -269,47 +262,6 @@ export class DateDetailService {
         key, 
         data: this.NHI_THAP_BAT_TU[key] 
     };
-  }
-
-  // Lấy thông tin tiết khí
-  private getTietKhi(jdn: number): string {
-    const lon = this.sunLongitude(jdn); // Lấy Hoàng Kinh Độ (0 - 360)
-    let closestTietKhi = "";
-    let minDiff = 360;
-
-    // Sắp xếp lại Tiết Khí theo góc tăng dần để duyệt hiệu quả hơn
-    const sortedTietKhi = [...this.TIET_KHI_DATA].sort((a, b) => a.goc - b.goc);
-
-    // Duyệt qua 24 tiết khí để tìm tiết khí mà ngày JDN đang nằm trong đó
-    for (let i = 0; i < sortedTietKhi.length; i++) {
-      const current = sortedTietKhi[i];
-      const next = sortedTietKhi[(i + 1) % sortedTietKhi.length];
-
-      const currentGoc = current.goc;
-      let nextGoc = next.goc;
-
-      // Xử lý trường hợp vòng qua 360/0 độ (Lập Xuân đến Xuân Phân)
-      if (nextGoc <= currentGoc) {
-        nextGoc += 360;
-      }
-
-      // Nếu Hoàng Kinh Độ nằm giữa góc hiện tại và góc tiếp theo
-      if (lon >= currentGoc && lon < nextGoc) {
-        return current.ten; // Trả về tên tiết khí hiện tại
-      }
-
-      // Trường hợp lon > 315 và lon < 360 (vùng của Lập Xuân)
-      if (lon >= 315 && lon < 360 && current.ten === "Lập Xuân") {
-        return current.ten;
-      }
-    }
-
-    // Xử lý trường hợp 0-15 độ (Xuân Phân) nếu không bắt được trong vòng lặp (lon < 15)
-    if (lon >= 0 && lon < 15) {
-      return "Xuân Phân";
-    }
-
-    return "Không xác định"; // Trường hợp dự phòng
   }
 
   private getSaoHoangDao(index: number) {
@@ -507,33 +459,6 @@ export class DateDetailService {
     Tý: 11,
     Sửu: 12,
   };
-
-  readonly TIET_KHI_DATA: { goc: number; ten: string }[] = [
-    { goc: 315, ten: "Lập Xuân" },
-    { goc: 330, ten: "Vũ Thủy" },
-    { goc: 345, ten: "Kinh Trập" },
-    { goc: 0, ten: "Xuân Phân" },
-    { goc: 15, ten: "Thanh Minh" },
-    { goc: 30, ten: "Cốc Vũ" },
-    { goc: 45, ten: "Lập Hạ" },
-    { goc: 60, ten: "Tiểu Mãn" },
-    { goc: 75, ten: "Mang Chủng" },
-    { goc: 90, ten: "Hạ Chí" },
-    { goc: 105, ten: "Tiểu Thử" },
-    { goc: 120, ten: "Đại Thử" },
-    { goc: 135, ten: "Lập Thu" },
-    { goc: 150, ten: "Xử Thử" },
-    { goc: 165, ten: "Bạch Lộ" },
-    { goc: 180, ten: "Thu Phân" },
-    { goc: 195, ten: "Hàn Lộ" },
-    { goc: 210, ten: "Sương Giáng" },
-    { goc: 225, ten: "Lập Đông" },
-    { goc: 240, ten: "Tiểu Tuyết" },
-    { goc: 255, ten: "Đại Tuyết" },
-    { goc: 270, ten: "Đông Chí" },
-    { goc: 285, ten: "Tiểu Hàn" },
-    { goc: 300, ten: "Đại Hàn" },
-  ];
 
   readonly GIO_HOANG_DAO: Record<string, string[]> = {
     Tý: ["Tý", "Sửu", "Mão", "Ngọ", "Thân", "Dậu"],

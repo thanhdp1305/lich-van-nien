@@ -140,4 +140,13 @@ export class AmLich {
       lunar
     }
   }
+  
+  sunLongitude(jdn: number): number {
+    const T = (jdn - 2451545.0) / 36525.0;
+    const M = 357.5291 + 35999.0503 * T;
+    const L0 = 280.46645 + 36000.76983 * T;
+    const DL = (1.9146 - 0.004817 * T) * Math.sin((M * Math.PI) / 180) + 0.019993 * Math.sin((2 * M * Math.PI) / 180);
+    const L = L0 + DL;
+    return ((L % 360) + 360) % 360;
+  }
 }
