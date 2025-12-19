@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, NGU_HANH_CAN, NGU_HANH_CHI } from "../data";
+import { DS_SAO_HAC_DAO, DS_SAO_HOANG_DAO, KHUNG_GIO, NGU_HANH_CAN, NGU_HANH_CHI } from "../data";
 import { AmLich } from "./am-lich.service";
 import { CanChi } from "./can-chi.service";
 import { NguHanh } from "./ngu-hanh.service";
@@ -7,9 +7,9 @@ import { HuongXuatHanh } from "./huong-xuat-hanh.service";
 import { Truc, TrucItem } from "./truc.service";
 import { NapAm } from "./nap-am.service";
 import { LucDieu } from "./luc-dieu.service";
+import { GioXuatHanh, GioXuatHanhItem } from "./gio-xuat-hanh.service";
 
 export type NgocHapItem = { k: string; type: "good" | "bad"; v: string };
-export type GioXuatHanhItem = { chi: string; range: string; note: string };
 export type NhiThapBatTuItem = {
   key: string;
   data: { sao: string; loai: string; moTa: string; nen: string; ky: string; ngoaiLe?: string };
@@ -62,6 +62,7 @@ export class DateDetailService {
     private truc: Truc,
     private napAm: NapAm,
     private lucDieu: LucDieu,
+    private gioXuatHanh: GioXuatHanh,
   ) {}
 
 
@@ -85,14 +86,14 @@ export class DateDetailService {
     const lucDieuName = this.lucDieu.LUC_DIEU_THEO_CHI[chiNgay];
     const lucDieuDesc = this.lucDieu.LUC_DIEU[lucDieuName] || "";
     const gioHD_chis = this.GIO_HOANG_DAO[chiNgay] || [];
-    const gioHD_text = gioHD_chis.map((c) => `${c} (${this.KHUNG_GIO[c] || ""})`);
+    const gioHD_text = gioHD_chis.map((c) => `${c} (${KHUNG_GIO[c] || ""})`);
     const nhi = this.getNhiThapBatTu(jdn);
     const truc = this.truc.getTrucByJdn(jdn);
     const banhTo = this.buildBanhTo(canNgay, chiNgay, lunar.lunarDay);
     const ngocHapList = this.buildNgocHap(canNgay, chiNgay, lunar.lunarDay);
     const huongList = Object.entries(this.huongXuatHanh.getHuongXuatHanh(canNgay)).map(([x, y]) => ({ k: x, v: y }));
     const hacThan = this.huongXuatHanh.getHuongHacThan(canChiNgay);
-    const gioXuatHanhNotes = this.buildGioXuatHanhNotes();
+    const gioXuatHanhNotes = this.gioXuatHanh.buildGioXuatHanhNotes();
     const tietKhi = this.getTietKhi(jdn);
     const [canThang, chiThang] = canChiThang.split(" ");
     const ngayHoangDao: any = this.getHoangDaoStatus(chiNgay, chiThang);
@@ -188,14 +189,6 @@ export class DateDetailService {
       return true;
     });
     return list;
-  }
-
-  private buildGioXuatHanhNotes(): GioXuatHanhItem[] {
-    return Object.entries(this.GIO_XUAT_HANH_LY_THUAN_PHONG).map(([chi, note]) => ({
-      chi,
-      range: this.KHUNG_GIO[chi] || "",
-      note,
-    }));
   }
 
   // getCanChiNgay(jdn: number): string {
@@ -557,20 +550,7 @@ export class DateDetailService {
     Hợi: ["Sửu", "Thìn", "Ngọ", "Mùi", "Tuất", "Hợi"],
   };
 
-  readonly KHUNG_GIO: Record<string, string> = {
-    Tý: "23:00 - 00:59",
-    Sửu: "01:00 - 02:59",
-    Dần: "03:00 - 04:59",
-    Mão: "05:00 - 06:59",
-    Thìn: "07:00 - 08:59",
-    Tỵ: "09:00 - 10:59",
-    Ngọ: "11:00 - 12:59",
-    Mùi: "13:00 - 14:59",
-    Thân: "15:00 - 16:59",
-    Dậu: "17:00 - 18:59",
-    Tuất: "19:00 - 20:59",
-    Hợi: "21:00 - 22:59",
-  };
+ 
 
   readonly NGAY_KY = {
     trungTang: "Kỵ chôn cất, cưới xin, xuất hành, xây nhà, xây mồ mả.",
@@ -813,21 +793,6 @@ export class DateDetailService {
     Trương: { sao: "Trương Nguyệt Lộc", loai: "Tốt", moTa: "Tướng tinh con nai.", nen: "Tốt cho cầu tài.", ky: "Không kỵ.", ngoaiLe: "" },
     Dực: { sao: "Dực Hỏa Xà", loai: "Xấu", moTa: "Tướng tinh con rắn.", nen: "Nếu cắt áo sẽ sinh tài.", ky: "Kỵ chôn cất, xây nhà, cưới hỏi.", ngoaiLe: "Tại Thân - Tý - Thìn rất tốt." },
     Chẩn: { sao: "Chẩn Thổ Trĩ", loai: "Tốt", moTa: "Tướng tinh con gà.", nen: "Tốt cho mọi việc.", ky: "Kỵ mai táng.", ngoaiLe: "" },
-  };
-
-  readonly GIO_XUAT_HANH_LY_THUAN_PHONG: Record<string, string> = {
-    Tý: "Cầu tài không lợi, hay gặp chuyện trái ý. Dễ gặp nạn. Nếu làm việc quan trọng phải cúng tế.",
-    Sửu: "Mọi việc tốt lành, cầu tài được. Xuất hành hướng Tây Nam càng tốt.",
-    Dần: "Mưu sự khó thành, cầu tài mờ mịt. Kiện cáo nên hoãn. Dễ mất tiền.",
-    Mão: "Tin vui sắp đến. Cầu tài đi hướng Nam rất tốt. Chăn nuôi thuận lợi.",
-    Thìn: "Dễ sinh tranh cãi, gặp chuyện đói kém. Người ra đi nên hoãn lại.",
-    Tỵ: "Giờ rất tốt, gặp nhiều may mắn. Kinh doanh có lợi, gia đạo hòa hợp.",
-    Ngọ: "Cầu tài không lợi, hay gặp thất ý. Người đi xa hay gặp nạn.",
-    Mùi: "Mọi việc tốt lành. Xuất hành Tây Nam đại cát.",
-    Thân: "Mưu việc khó thành. Kiện cáo nên hoãn. Dễ mất của.",
-    Dậu: "Tin vui đến. Cầu lộc đi hướng Nam rất tốt.",
-    Tuất: "Cãi vã, thị phi, không nên làm việc quan trọng.",
-    Hợi: "Rất tốt, kinh doanh thuận lợi, người đi xa sắp về.",
   };
 
   readonly NGOC_HAP_SAO_TOT_FULL: Record<string, string> = {
